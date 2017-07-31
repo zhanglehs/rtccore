@@ -1,9 +1,4 @@
 *.pyc
-*.gypcmd
-*.TOC
-*.ninja
-*.md5.stamp
-*.o
 *.sln
 *.vcxproj
 *.filters
@@ -11,10 +6,14 @@
 *.suo
 *.opensdf
 *.user
-*.exp
-*.pdb
 
-Visual Studio 2013
-.DS_Store
-.ninja_deps
-.ninja_log
+base
+build
+buildtools
+net
+out
+testing
+third_party
+tools
+
+chromium

@@ -8,7 +8,7 @@
 
 {
   'variables': {
-    'include_tests%': 1,
+    'include_tests%': 0,
     'webrtc_root_additional_dependencies': [],
   },
   'targets': [
@@ -17,8 +17,8 @@
       'type': 'none',
       'dependencies': [
         'webrtc/webrtc.gyp:*',
-        'talk/libjingle.gyp:*',
-        'talk/libjingle_examples.gyp:*',
+        #'talk/libjingle.gyp:*',
+        #'talk/libjingle_examples.gyp:*',
         '<@(webrtc_root_additional_dependencies)',
       ],
       'conditions': [
