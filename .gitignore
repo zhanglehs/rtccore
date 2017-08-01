@@ -1,4 +1,5 @@
 *.pyc
+
 *.sln
 *.vcxproj
 *.filters
@@ -7,13 +8,21 @@
 *.opensdf
 *.user
 
+.DS_Store
+*.xcodeproj
+*.xcworkspace
+out_ios_arm64_v8a
+out_ios_armeabi_v7a
+out_ios_ia32
+out_ios_x64
+
 base
 build
 buildtools
 net
-out
 testing
 third_party
 tools
 
+out
 chromium

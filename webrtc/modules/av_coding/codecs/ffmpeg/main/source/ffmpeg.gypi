@@ -46,8 +46,7 @@
             '../../../../../../../chromium/src/third_party/libvpx/source/libvpx',
             '../../../../../../../webrtc/modules/av_coding/codes/ffmpeg/main/interface',
             '../../../../../../../webrtc/modules/av_coding/codes/ffmpeg/main/source',
-            '../../../../../../../../../codec-ios/ffmpeg-ijk/include',
-            '../../../../../../../../../codec-ios/include',
+            '../../../../../../../third_party/ffmpeg/include',
           ], 
           'sources': [
 	    'ffmpeg_factory.h',

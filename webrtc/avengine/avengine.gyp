@@ -110,13 +110,7 @@
 	    'interface/avengine_api.h',
 		'interface/ffmpeg_api.h',
 		'interface/ios_video_render_api.h',
-		'source/loadlib.cc',
       ],
-	  'msvs_settings': {
-        'VCLinkerTool': {
-          'ImageHasSafeExceptionHandlers': 'false',
-        },
-      },
       'variables': {
         'clang_warning_flags': [
           '-Wno-incompatible-pointer-types',
@@ -134,39 +128,38 @@
           '-Wno-missing-field-initializers',
           '-Wno-invalid-source-encoding',
          ],   
-       },        
-	  'msvs_disabled_warnings': [
-		   4800,
-		   4101,
-		   4309,
-		   4169,
-		   4309,
-		   4018,
-		   4005,
-		   4289,
-		   4805,
-		   4706,
-		   4804,
-       ],
-	   'conditions': [
-			['OS=="win"', {
-				'msvs_settings': {
-					'VCCLCompilerTool': {
-						'DisableSpecificWarnings': ['4251','4996'],
-						'WarnAsError': 'false',
-					},
-					'VCLinkerTool': {
-						# 'ImageHasSafeExceptionHandlers': 0, # /SAFESEH:NO
-						'AdditionalLibraryDirectories': [],
-					},
-				}, # msvs_settings
-			}],
-			['OS=="win"', {
-				'sources': [
-					'source/avengine_api.cc',
-				],
-			}],
-		],
+       },
+        'conditions': [
+          ['OS=="win"', {
+            'msvs_settings': {
+              'VCCLCompilerTool': {
+                'DisableSpecificWarnings': ['4251','4996'],
+                'WarnAsError': 'false',
+              },
+              'VCLinkerTool': {
+                'ImageHasSafeExceptionHandlers': 'false',
+                'AdditionalLibraryDirectories': [],
+              },
+            },
+            'msvs_disabled_warnings': [
+              4800,
+              4101,
+              4309,
+              4169,
+              4309,
+              4018,
+              4005,
+              4289,
+              4805,
+              4706,
+              4804,
+            ],
+            'sources': [
+              'source/avengine_api.cc',
+              'source/loadlib.cc',
+            ],
+          }],
+        ],
 	}
   ],
 }
