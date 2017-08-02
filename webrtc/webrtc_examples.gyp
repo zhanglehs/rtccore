@@ -38,7 +38,7 @@
             'use_native_jni_exports': 1,
           },
            'ldflags': [
-              '-L../<(webrtc_root)/ffmpeg/android/lib',
+              '-L../../third_party/ffmpeg/android/lib',
             ],
 
           'link_settings': {

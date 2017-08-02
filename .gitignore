@@ -16,6 +16,8 @@ out_ios_armeabi_v7a
 out_ios_ia32
 out_ios_x64
 
+out_android_armeabi-v7a
+
 base
 build
 buildtools

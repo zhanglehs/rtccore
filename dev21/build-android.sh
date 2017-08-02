@@ -32,8 +32,10 @@ create_directory_if_not_found() {
 #DEPOT_TOOLS="$PROJECT_ROOT/depot_tools"
 #WEBRTC_ROOT="$PROJECT_ROOT/webrtc"
 #create_directory_if_not_found $WEBRTC_ROOT
-#BUILD="$WEBRTC_ROOT/libjingle_peerconnection_builds"
-WEBRTC_TARGET="WebRTCDemo"
+BUILD="$PROJECT_ROOT/out"
+create_directory_if_not_found $BUILD
+WEBRTC_TARGET="avengine_dll"
+#WEBRTC_TARGET="WebRTCDemo"
 
 ANDROID_TOOLCHAINS="$PROJECT_ROOT/third_party/android_tools/ndk/toolchains"
 
@@ -152,40 +154,19 @@ build_webrtc() {
     ARCH_OUT="out_android_${ARCH}"
     echo "Build ${WEBRTC_TARGET} in $BUILD_TYPE (arch: ${WEBRTC_ARCH:-arm})"
     echo "$ARCH_OUT/$BUILD_TYPE"
+    rm -rf $BUILD/*
     exec_ninja "$ARCH_OUT/$BUILD_TYPE"
     # Verify the build actually worked
     if [ $? -eq 0 ]; then
         SOURCE_DIR="$PROJECT_ROOT/$ARCH_OUT/$BUILD_TYPE"
-#        TARGET_DIR="$BUILD/$BUILD_TYPE"
-#        create_directory_if_not_found "$TARGET_DIR"
-        
-#        echo "Copy JAR File"
-#        create_directory_if_not_found "$TARGET_DIR/libs/"
-#        create_directory_if_not_found "$TARGET_DIR/jni/"
+        cp $SOURCE_DIR/lib.java/*_java.jar "$BUILD"
+        cp "$SOURCE_DIR/libavengine_dll.so" "$BUILD"
 
-#        ARCH_JNI="$TARGET_DIR/jni/${ARCH}"
-#        create_directory_if_not_found $ARCH_JNI
+#         $STRIP -o $ARCH_JNI/libjingle_peerconnection_so.so $WEBRTC_ROOT/src/$ARCH_OUT/$BUILD_TYPE/lib/libjingle_peerconnection_so.so -s    
 
-        # Copy the jar
-#        cp -p "$SOURCE_DIR/gen/libjingle_peerconnection_java/libjingle_peerconnection_java.jar" "$TARGET_DIR/libs/libjingle_peerconnection.jar" 
-
-        # Strip the build only if its release
-#        if [ "$WEBRTC_DEBUG" = "true" ] ;
-#        then
-#            cp -p $WEBRTC_ROOT/src/$ARCH_OUT/$BUILD_TYPE/lib/libjingle_peerconnection_so.so $ARCH_JNI/libjingle_peerconnection_so.so
-#        else
-#            $STRIP -o $ARCH_JNI/libjingle_peerconnection_so.so $WEBRTC_ROOT/src/$ARCH_OUT/$BUILD_TYPE/lib/libjingle_peerconnection_so.so -s    
-#        fi
-
-#        cd $TARGET_DIR
-#        mkdir -p aidl
-#        mkdir -p assets
-#        mkdir -p res
         echo "$BUILD_TYPE build for apprtc complete"
     else
         echo "$BUILD_TYPE build for apprtc failed"
-#	echo “exit be cancel by gxh”
-        #exit 1
     fi
 	cd $WORKING_DIR
 }
