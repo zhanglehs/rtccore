@@ -57,8 +57,7 @@ export WEBRTC_ARCH=armv7
 export CLASSPATH="$CLASS_PATH":.
 
 function clear_all(){
-    CLEAR_PATH="$PROJECT_ROOT/out_android_armeabi-v7a/Release"
-    bash $CLEAR_PATH/clear.sh
+    rm -rf $PROJECT_ROOT/out_android_armeabi-v7a
 }
 #===============
 exec_ninja() {
