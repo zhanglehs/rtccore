@@ -5,6 +5,7 @@ ln -s chromium/src/testing                   testing
 ln -s chromium/src/net                       net
 ln -s chromium/src/base                      base
 ln -s chromium/src/buildtools                buildtools
+ln -s ../chromium/src/third_party/android_tools third_party/android_tools
 ln -s ../chromium/src/third_party/expat         third_party/expat
 ln -s ../chromium/src/third_party/libsrtp       third_party/libsrtp
 ln -s ../chromium/src/third_party/usrsctp       third_party/usrsctp

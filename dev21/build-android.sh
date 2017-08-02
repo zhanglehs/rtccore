@@ -27,38 +27,21 @@ create_directory_if_not_found() {
 	fi
 }
 
-
-#DEFAULT_WEBRTC_URL="https://chromium.googlesource.com/external/webrtc"
-#DEPOT_TOOLS="$PROJECT_ROOT/depot_tools"
-#WEBRTC_ROOT="$PROJECT_ROOT/webrtc"
-#create_directory_if_not_found $WEBRTC_ROOT
 BUILD="$PROJECT_ROOT/out"
 create_directory_if_not_found $BUILD
 WEBRTC_TARGET="avengine_dll"
 #WEBRTC_TARGET="WebRTCDemo"
 
-ANDROID_TOOLCHAINS="$PROJECT_ROOT/third_party/android_tools/ndk/toolchains"
-
-#
-NDK=$PROJECT_ROOT/third_party/android_tools/ndk
-NDK_ROOT=$NDK
 SDK=$PROJECT_ROOT/third_party/android_tools/sdk
-ANTTOOLS=$SDK/tools
-AAPT=$SDK/build-tools/14.0.0
-CLASS_PATH=$PROJECT_ROOT/third_party/android_tools/sdk/platforms/android-14/android.jar
-SYSROOT=$NDK/platforms/android-16/arch-arm/
-SYSROOT2=$NDK/platforms/android-21/arch-arm64/
-TOOLCHAIN=$NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64
-TOOLCHAIN2=$NDK/toolchains/aarch64-linux-androideabi-4.9/prebuilt/linux-x86_64
-
+export CLASSPATH="$SDK/platforms/android-14/android.jar":.
 export PATH="$PATH":$PROJECT_ROOT/depot_tools
 export WEBRTC_ARCH=armv7
 #export WEBRTC_ARCH=armv8
-export CLASSPATH="$CLASS_PATH":.
 
 function clear_all(){
     rm -rf $PROJECT_ROOT/out_android_armeabi-v7a
 }
+
 #===============
 exec_ninja() {
   echo "Running ninja"
@@ -136,11 +119,9 @@ build_webrtc() {
     if [ "$WEBRTC_ARCH" = "armv7" ] ;
     then
         ARCH="armeabi-v7a"
-        STRIP=$ANDROID_TOOLCHAINS/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-strip
     elif [ "$WEBRTC_ARCH" = "armv8" ] ;
     then
         ARCH="arm64-v8a"
-        STRIP=$ANDROID_TOOLCHAINS/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin/aarch64-linux-android-strip
     fi
 
     if [ "$WEBRTC_DEBUG" = "true" ] ;
