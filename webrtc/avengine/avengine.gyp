@@ -136,6 +136,15 @@
                 'AdditionalLibraryDirectories': [],
               },
             },
+            'configurations': {
+              'Debug': {
+                'msvs_settings': {
+                  'VCLinkerTool': {
+                    'IgnoreDefaultLibraryNames':['libcmt.lib'],
+                  },
+                },
+              },
+            },
             'msvs_disabled_warnings': [
               4800,
               4101,
