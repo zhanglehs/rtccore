@@ -332,7 +332,6 @@ function lipo_intel_and_arm() {
 
 function lipo_for_configuration() {
     CONFIGURATION=$1
-    WEBRTC_REVISION=`get_revision_number`
 
     # Directories to use for lipo, armv7 and ia32 as default
     LIPO_DIRS="$BUILD/libWebRTC-armeabi_v7a-$CONFIGURATION.a"
