@@ -344,6 +344,16 @@ function lipo_for_configuration() {
 
     # Lipo the simulator build with the ios build into a universal library
     lipo -create $LIPO_DIRS -output $BUILD/libWebRTC-arm-intel-$CONFIGURATION.a
+
+#    exec_strip "$PROJECT_DIR/third_party/ffmpeg/ios/lib/libavcodec.a"
+#    exec_strip "$PROJECT_DIR/third_party/ffmpeg/ios/lib/libavfilter.a"
+#    exec_strip "$PROJECT_DIR/third_party/ffmpeg/ios/lib/libavformat.a"
+#    exec_strip "$PROJECT_DIR/third_party/ffmpeg/ios/lib/libavutil.a"
+#    exec_strip "$PROJECT_DIR/third_party/ffmpeg/ios/lib/libswresample.a"
+#    exec_strip "$PROJECT_DIR/third_party/ffmpeg/ios/lib/libswscale.a"
+#    exec_strip "$PROJECT_DIR/third_party/ffmpeg/ios/lib/libfdk-aac.a"
+#    exec_strip "$PROJECT_DIR/third_party/ffmpeg/ios/lib/libx264.a"
+    exec_libtool $BUILD/libWebRTC-$CONFIGURATION.a $BUILD/libWebRTC-arm-intel-$CONFIGURATION.a $PROJECT_DIR/third_party/ffmpeg/ios/lib/*.a
 }
 
 # Build webrtc for an ios device and simulator, then create a universal library
