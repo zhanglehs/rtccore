@@ -452,6 +452,22 @@ int VCMSessionInfo::InsertPacket(const VCMPacket& packet,
     return -1;
   }
 
+  // Find the position of this packet in the packet list in sequence number
+  // order and insert it. Loop over the list in reverse order.
+  ReversePacketIterator rit = packets_.rbegin();
+  for (; rit != packets_.rend(); ++rit) {
+    if (LatestSequenceNumber(packet.seqNum, (*rit).seqNum) == packet.seqNum) {
+      break;
+    }
+  }
+
+  // Check for duplicate packets.
+  if (rit != packets_.rend() &&
+    (*rit).seqNum == packet.seqNum && (*rit).sizeBytes > 0) {
+    //assert(false);
+    return -2;
+  }
+
   if (packet.isFirstPacket) {
     assert(first_packet_seq_num_ == -1);
     for (auto it = packets_.begin(); it != packets_.end(); it++) {
@@ -471,22 +487,6 @@ int VCMSessionInfo::InsertPacket(const VCMPacket& packet,
     if (last_packet_seq_num_ != -1) {
       assert(IsNewerSequenceNumber(last_packet_seq_num_, packet.seqNum));
     }
-  }
-
-  // Find the position of this packet in the packet list in sequence number
-  // order and insert it. Loop over the list in reverse order.
-  ReversePacketIterator rit = packets_.rbegin();
-  for (; rit != packets_.rend(); ++rit) {
-    if (LatestSequenceNumber(packet.seqNum, (*rit).seqNum) == packet.seqNum) {
-      break;
-    }
-  }
-
-  // Check for duplicate packets.
-  if (rit != packets_.rend() &&
-    (*rit).seqNum == packet.seqNum && (*rit).sizeBytes > 0) {
-    assert(false);
-    return -2;
   }
 
   //if (packet.codec == kVideoCodecH264){ 
