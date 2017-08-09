@@ -1219,16 +1219,16 @@ int32_t AudioDeviceIOS::InitPlayOrRecord() {
     // todo: Log info about setup.
 
     UInt32 enableIO = 1;
-    // result = AudioUnitSetProperty(_auVoiceProcessing,
-    //                               kAudioOutputUnitProperty_EnableIO,
-    //                               kAudioUnitScope_Input,
-    //                               1,  // input bus
-    //                               &enableIO,
-    //                               sizeof(enableIO));
-    // if (0 != result) {
-    //     WEBRTC_TRACE(kTraceError, kTraceAudioDevice, _id,
-    //                  "  Could not enable IO on input (result=%d)", result);
-    // }
+    result = AudioUnitSetProperty(_auVoiceProcessing,
+                                  kAudioOutputUnitProperty_EnableIO,
+                                  kAudioUnitScope_Input,
+                                  1,  // input bus
+                                  &enableIO,
+                                  sizeof(enableIO));
+    if (0 != result) {
+        WEBRTC_TRACE(kTraceError, kTraceAudioDevice, _id,
+                     "  Could not enable IO on input (result=%d)", result);
+    }
 
     result = AudioUnitSetProperty(_auVoiceProcessing,
                                   kAudioOutputUnitProperty_EnableIO,
@@ -1302,10 +1302,7 @@ int32_t AudioDeviceIOS::InitPlayOrRecord() {
 
     // Store the sampling frequency to use towards the Audio Device Buffer
     // todo: Add 48 kHz (increase buffer sizes). Other fs?
-    if ((playoutDesc.mSampleRate > 47090.0)
-        && (playoutDesc.mSampleRate < 48010.0)) {
-        _adbSampFreq = 48000;
-    }else if ((playoutDesc.mSampleRate > 44090.0)
+    if ((playoutDesc.mSampleRate > 44090.0)
         && (playoutDesc.mSampleRate < 44110.0)) {
         _adbSampFreq = 44100;
     } else if ((playoutDesc.mSampleRate > 15990.0)
@@ -1366,31 +1363,31 @@ int32_t AudioDeviceIOS::InitPlayOrRecord() {
             "  Could not get stream format Audio Unit in/1 (result=%d)",
             result);
     }
-    // WEBRTC_TRACE(kTraceInfo, kTraceAudioDevice, _id,
-    //              "  Audio Unit recording opened in sampling rate %f",
-    //              recordingDesc.mSampleRate);
+    WEBRTC_TRACE(kTraceInfo, kTraceAudioDevice, _id,
+                 "  Audio Unit recording opened in sampling rate %f",
+                 recordingDesc.mSampleRate);
 
-    // recordingDesc.mSampleRate = preferredSampleRate;
+    recordingDesc.mSampleRate = preferredSampleRate;
 
-    // // Set stream format for out/1 (use same sampling frequency as for in/1)
-    // recordingDesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger
-    //                              | kLinearPCMFormatFlagIsPacked
-    //                              | kLinearPCMFormatFlagIsNonInterleaved;
+    // Set stream format for out/1 (use same sampling frequency as for in/1)
+    recordingDesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger
+                                 | kLinearPCMFormatFlagIsPacked
+                                 | kLinearPCMFormatFlagIsNonInterleaved;
 
-    // recordingDesc.mBytesPerPacket = 2;
-    // recordingDesc.mFramesPerPacket = 1;
-    // recordingDesc.mBytesPerFrame = 2;
-    // recordingDesc.mChannelsPerFrame = 1;
-    // recordingDesc.mBitsPerChannel = 16;
-    // result = AudioUnitSetProperty(_auVoiceProcessing,
-    //                               kAudioUnitProperty_StreamFormat,
-    //                               kAudioUnitScope_Output, 1, &recordingDesc,
-    //                               size);
-    // if (0 != result) {
-    //     WEBRTC_TRACE(kTraceError, kTraceAudioDevice, _id,
-    //         "  Could not set stream format Audio Unit out/1 (result=%d)",
-    //         result);
-    // }
+    recordingDesc.mBytesPerPacket = 2;
+    recordingDesc.mFramesPerPacket = 1;
+    recordingDesc.mBytesPerFrame = 2;
+    recordingDesc.mChannelsPerFrame = 1;
+    recordingDesc.mBitsPerChannel = 16;
+    result = AudioUnitSetProperty(_auVoiceProcessing,
+                                  kAudioUnitProperty_StreamFormat,
+                                  kAudioUnitScope_Output, 1, &recordingDesc,
+                                  size);
+    if (0 != result) {
+        WEBRTC_TRACE(kTraceError, kTraceAudioDevice, _id,
+            "  Could not set stream format Audio Unit out/1 (result=%d)",
+            result);
+    }
 
     // Initialize here already to be able to get/set stream properties.
     result = AudioUnitInitialize(_auVoiceProcessing);
