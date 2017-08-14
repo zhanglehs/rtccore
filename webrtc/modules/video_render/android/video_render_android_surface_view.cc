@@ -191,7 +191,9 @@ int32_t AndroidSurfaceViewRenderer::Init() {
     return -1;
   }
 
-  _javaStopCid = env->GetMethodID(_javaRenderClass, "Stop", "()V");
+  if (GetGlobalConfig()->android_render_mode == 1) {
+    _javaStopCid = env->GetMethodID(_javaRenderClass, "Stop", "()V");
+  }
 
   // Detach this thread if it was attached
   if (isAttached) {
