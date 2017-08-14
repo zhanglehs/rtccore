@@ -24,6 +24,18 @@
       ],
     }, # transient_suppression_test
     {
+      'target_name': 'click_annotate',
+      'type': 'executable',
+      'dependencies': [
+        '<(webrtc_root)/modules/modules.gyp:audio_processing',
+      ],
+      'sources': [
+        'transient/click_annotate.cc',
+        'transient/file_utils.cc',
+        'transient/file_utils.h',
+      ],
+    },  # click_annotate
+    {
       'target_name': 'nonlinear_beamformer_test',
       'type': 'executable',
       'dependencies': [
@@ -52,6 +64,39 @@
             'proto_out_dir': '<(proto_out_protected)',
           },
           'includes': [ '../../build/protoc.gypi', ],
+        },
+        {
+          'target_name': 'audioproc',
+          'type': 'executable',
+          'dependencies': [
+            'audio_processing',
+            'audioproc_debug_proto',
+            '<(DEPTH)/testing/gtest.gyp:gtest',
+            '<(webrtc_root)/system_wrappers/system_wrappers.gyp:system_wrappers',
+            '<(webrtc_root)/test/test.gyp:test_support',
+          ],
+          'sources': [ 'test/process_test.cc', ],
+        },
+        {
+          'target_name': 'audioproc_f',
+          'type': 'executable',
+          'dependencies': [
+            'audio_processing',
+            'audioproc_debug_proto',
+            '<(DEPTH)/third_party/gflags/gflags.gyp:gflags',
+          ],
+          'sources': [ 'test/audioproc_float.cc', ],
+        },
+        {
+          'target_name': 'unpack_aecdump',
+          'type': 'executable',
+          'dependencies': [
+            'audioproc_debug_proto',
+            '<(webrtc_root)/system_wrappers/system_wrappers.gyp:system_wrappers',
+            '<(webrtc_root)/common_audio/common_audio.gyp:common_audio',
+            '<(DEPTH)/third_party/gflags/gflags.gyp:gflags',
+          ],
+          'sources': [ 'test/unpack.cc', ],
         },
       ],
     }],

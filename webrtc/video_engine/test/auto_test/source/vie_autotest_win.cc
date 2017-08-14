@@ -197,9 +197,8 @@ bool ViEAutoTestWindowManager::SetTopmostWindow() {
   // Meant to put terminal window on top
   return true;
 }
-#ifndef GXH_TEST
+
 int main(int argc, char* argv[]) {
   ViEAutoTestMain auto_test;
   return auto_test.RunTests(argc, argv);
 }
-#endif

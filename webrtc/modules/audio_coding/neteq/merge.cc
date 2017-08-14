@@ -46,11 +46,6 @@ int Merge::Process(int16_t* input, size_t input_length,
   int16_t best_correlation_index = 0;
   size_t output_length = 0;
 
-  if (input_length > 4096)
-  {
-     // std::cout << " input_length " << input_length << std::endl;
-  }
-
   for (size_t channel = 0; channel < num_channels_; ++channel) {
     int16_t* input_channel = &input_vector[channel][0];
     int16_t* expanded_channel = &expanded_[channel][0];

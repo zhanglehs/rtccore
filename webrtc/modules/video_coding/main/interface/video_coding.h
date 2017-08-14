@@ -462,8 +462,6 @@ public:
     //                     < 0,         on error.
     virtual int32_t ResetDecoder() = 0;
 
-	virtual int32_t ResetDecoder2(int width, int height) = 0;
-
     // API to get the codec which is currently used for decoding by the module.
     //
     // Input:
@@ -520,8 +518,6 @@ public:
     // Return value      : Total delay in ms, on success.
     //                     < 0,               on error.
     virtual int32_t Delay() const = 0;
-
-    virtual int32_t ExpectedDelay() const = 0;
 
     // Returns the number of packets discarded by the jitter buffer due to being
     // too late. This can include duplicated packets which arrived after the

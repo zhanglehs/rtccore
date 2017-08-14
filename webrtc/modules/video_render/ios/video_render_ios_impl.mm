@@ -140,8 +140,7 @@ int32_t VideoRenderIosImpl::ConfigureRenderer(const uint32_t streamId,
                                               const float top,
                                               const float right,
                                               const float bottom) {
-  return ptr_ios_render_->SetStreamCropping(streamId, left, top, right, bottom);//gxh
-  //IOS_UNSUPPORTED();
+  IOS_UNSUPPORTED();
 }
 
 int32_t VideoRenderIosImpl::SetTransparentBackground(const bool enable) {

@@ -125,7 +125,7 @@ class VideoRenderAndroid: IVideoRender {
       const float right,
       const float bottom,
       VideoRenderAndroid& renderer) = 0;
-  virtual void ChangeSurefaceSize(void *stream, int32_t width, int32_t height) = 0;
+
   int32_t _id;
   CriticalSectionWrapper& _critSect;
   VideoRenderType _renderType;

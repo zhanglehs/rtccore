@@ -181,11 +181,6 @@ VCMGenericDecoder::Release()
     return _decoder.Release();
 }
 
-int32_t VCMGenericDecoder::Reset2(int width, int height)
-{
-	return _decoder.Reset2(width, height);
-}
-
 int32_t VCMGenericDecoder::Reset()
 {
     return _decoder.Reset();

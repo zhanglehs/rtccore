@@ -14,6 +14,15 @@
   },
   'targets': [
     {
+      'target_name': 'no_op_voice',
+      'type': 'executable',
+      'dependencies': [
+        '<@(merge_libs_dependencies)',
+        '../voice_engine/voice_engine.gyp:voice_engine'
+      ],
+      'sources': ['no_op.cc',],
+    },
+    {
       'target_name': 'merged_lib_voice',
       'type': 'none',
       'dependencies': [

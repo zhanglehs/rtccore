@@ -31,8 +31,6 @@ class AndroidSurfaceViewChannel : public AndroidStream {
   int32_t Init(int32_t zOrder, const float left, const float top,
                const float right, const float bottom);
 
-  void ChangeSurefaceSize(int32_t width, int32_t height);
-
   //Implement VideoRenderCallback
   virtual int32_t RenderFrame(const uint32_t streamId,
                               I420VideoFrame& videoFrame);
@@ -55,7 +53,7 @@ class AndroidSurfaceViewChannel : public AndroidStream {
   unsigned char* _directBuffer;
   jmethodID _createByteBufferCid;
   jmethodID _drawByteBufferCid;
-  jmethodID _changeSurefaceSizeCid;
+
   jmethodID _setCoordinatesCid;
   int _bitmapWidth;
   int _bitmapHeight;
@@ -79,8 +77,6 @@ class AndroidSurfaceViewRenderer : private VideoRenderAndroid {
       const float right,
       const float bottom,
       VideoRenderAndroid& renderer);
-  virtual void ChangeSurefaceSize(void *stream, int32_t width, int32_t height);
-
  private:
   jobject _javaRenderObj;
   jclass _javaRenderClass;

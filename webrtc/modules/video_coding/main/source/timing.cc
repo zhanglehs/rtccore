@@ -265,11 +265,6 @@ uint32_t VCMTiming::TargetVideoDelay() const {
   return TargetDelayInternal();
 }
 
-uint32_t VCMTiming::ExpectedVideoDelay() const {
-  CriticalSectionScoped cs(crit_sect_);
-  return jitter_delay_ms_ + MaxDecodeTimeMs() + render_delay_ms_;
-}
-
 uint32_t VCMTiming::TargetDelayInternal() const {
   return std::max(min_playout_delay_ms_,
       jitter_delay_ms_ + MaxDecodeTimeMs() + render_delay_ms_);

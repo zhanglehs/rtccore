@@ -93,15 +93,7 @@ public:
         webrtc::DecodedImageCallback* callback) override;
     int32_t Release() override;
     int32_t Reset() override;
-#ifndef GXH_TEST_H264
-	int Reset2(int width, int height) override 
-	{ 
-		if (width < 0 || height < 0)
-			return -1;
-		else
-			return 0; 
-	}
-#endif
+
     struct FunctionCalls
     {
         int32_t InitDecode;

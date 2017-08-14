@@ -1003,9 +1003,7 @@ class AudioCodingModule {
 
   virtual void GetDecodingCallStatistics(
       AudioDecodingCallStats* call_stats) const = 0;
-  virtual void SetAacCodecInst(CodecInst inst) = 0;// { current_receive_codec_ = inst; }
-//private:
-//	CodecInst current_receive_codec_;
+  virtual void SetAacCodecInst(CodecInst inst) = 0;
 };
 
 class AudioEncoder;

@@ -30,9 +30,6 @@
 #include "webrtc/video_engine/include/vie_network.h"
 #include "webrtc/video_engine/include/vie_render.h"
 #include "webrtc/video_engine/include/vie_rtp_rtcp.h"
-#ifdef GXH_TEST_EXT_CODEC
-#include "webrtc/modules/video_coding/codecs/h264/main/interface/h264.h"
-#endif
 
 // Macro for native functions that can be found by way of jni-auto discovery.
 // Note extern "C" is needed for "discovery" of native methods to work.

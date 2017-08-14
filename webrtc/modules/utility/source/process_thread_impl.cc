@@ -70,7 +70,7 @@ void ProcessThreadImpl::Start() {
     m.module->ProcessThreadAttached(this);
 
   thread_ = ThreadWrapper::CreateThread(
-      &ProcessThreadImpl::Run, this, "ProcessThread_21");
+      &ProcessThreadImpl::Run, this, "ProcessThread");
   CHECK(thread_->Start());
 }
 
@@ -179,12 +179,10 @@ bool ProcessThreadImpl::Process() {
       // operation should not require taking a lock, so querying all modules
       // should run in a matter of nanoseconds.
       if (m.next_callback == 0)
-      {
         m.next_callback = GetNextCallbackTime(m.module, now);
-      }
 
-      if (m.next_callback <= now || m.next_callback == kCallProcessImmediately)
-      {
+      if (m.next_callback <= now ||
+          m.next_callback == kCallProcessImmediately) {
         m.module->Process();
         // Use a new 'now' reference to calculate when the next callback
         // should occur.  We'll continue to use 'now' above for the baseline
@@ -194,9 +192,7 @@ bool ProcessThreadImpl::Process() {
       }
 
       if (m.next_callback < next_checkpoint)
-      {
         next_checkpoint = m.next_callback;
-      }
     }
 
     while (!queue_.empty()) {
@@ -213,6 +209,7 @@ bool ProcessThreadImpl::Process() {
   if (time_to_wait > 0)
     wake_up_->Wait(static_cast<unsigned long>(time_to_wait));
 
+  // INFO: zhangle, what's this?
   wake_up_->Wait(10);
   return true;
 }

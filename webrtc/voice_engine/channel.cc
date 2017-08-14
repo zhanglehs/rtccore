@@ -389,11 +389,11 @@ Channel::OnInitializeDecoder(
     receiveCodec.rate = rate;
     strncpy(receiveCodec.plname, payloadName, RTP_PAYLOAD_NAME_SIZE - 1);
 
-	receiveCodec.chanId = _channelId;
-  receiveCodec.cb = decode_cb_;
-  receiveCodec.object = decode_object_;
-  strcpy(receiveCodec.params, decode_params_);
-	audio_coding_->SetAacCodecInst(receiveCodec);
+    receiveCodec.chanId = _channelId;
+    receiveCodec.cb = decode_cb_;
+    receiveCodec.object = decode_object_;
+    strcpy(receiveCodec.params, decode_params_);
+    audio_coding_->SetAacCodecInst(receiveCodec);
 
     audio_coding_->Codec(payloadName, &dummyCodec, frequency, channels);
     receiveCodec.pacsize = dummyCodec.pacsize;

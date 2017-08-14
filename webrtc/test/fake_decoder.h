@@ -38,12 +38,6 @@ class FakeDecoder : public VideoDecoder {
 
   int32_t Release() override;
   int32_t Reset() override;
-#ifndef GXH_TEST
-  int32_t Reset2(int width, int height)
-    {
-        return (width+height);
-    }
-#endif
 
  private:
   VideoCodec config_;

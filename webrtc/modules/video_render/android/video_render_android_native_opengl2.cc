@@ -231,11 +231,6 @@ AndroidNativeOpenGl2Renderer::CreateAndroidRenderChannel(
   return NULL;
 }
 
-void AndroidNativeOpenGl2Renderer::ChangeSurefaceSize(void *stream0, int32_t width, int32_t height) {
-  // AndroidNativeOpenGl2Channel* stream = (AndroidNativeOpenGl2Channel*)stream0;
-  return;
-}
-
 AndroidNativeOpenGl2Channel::AndroidNativeOpenGl2Channel(
     uint32_t streamId,
     JavaVM* jvm,

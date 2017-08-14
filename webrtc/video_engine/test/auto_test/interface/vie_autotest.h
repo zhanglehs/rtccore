@@ -31,8 +31,6 @@
 #include "webrtc/voice_engine/include/voe_base.h"
 #include "webrtc/voice_engine/include/voe_codec.h"
 #include "webrtc/voice_engine/include/voe_hardware.h"
-#include "webrtc/video_engine/include/vie_external_codec.h"
-
 
 #ifndef WEBRTC_ANDROID
 #include <string>

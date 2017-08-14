@@ -74,9 +74,6 @@ public class ViESurfaceRenderer {
         return bitmap;
     }
 
-    public void ChangeSurefaceSize(int width, int height) {
-    }
-
     public ByteBuffer CreateByteBuffer(int width, int height) {
         Log.d(TAG, "CreateByteBuffer " + width + ":" + height);
         if (bitmap == null) {

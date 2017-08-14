@@ -88,9 +88,6 @@ public:
     /**
     *	Reset the decoder state, prepare for a new call
     */
-
-	int32_t Reset2(int width, int height);
-
     int32_t Reset();
 
     /**

@@ -172,23 +172,6 @@ int ViERenderImpl::RemoveRenderer(const int render_id) {
   return 0;
 }
 
-int ViERenderImpl::SetStartImage(const int render_id ,const I420VideoFrame& videoFrame)
-{
-	LOG_F(LS_INFO) << "render_id: " << render_id;
-	ViERenderManagerScoped rs(*(shared_data_->render_manager()));
-	ViERenderer* renderer = rs.Renderer(render_id);
-	if (!renderer) {
-		shared_data_->SetLastError(kViERenderInvalidRenderId);
-		return -1;
-	}
-	if (renderer->SetRenderStartImage(videoFrame) != 0) {
-		shared_data_->SetLastError(kViERenderUnknownError);
-		return -1;
-	}
-	return 0;  
-}
-
-
 int ViERenderImpl::StartRender(const int render_id) {
   LOG_F(LS_INFO) << "render_id: " << render_id;
   ViERenderManagerScoped rs(*(shared_data_->render_manager()));

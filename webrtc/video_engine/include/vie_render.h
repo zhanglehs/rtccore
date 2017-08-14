@@ -113,8 +113,6 @@ class ViERender {
                           RawVideoType video_input_format,
                           ExternalRenderer* renderer) = 0;
 
-  virtual int
-	  SetStartImage(const int render_id, const I420VideoFrame& videoFrame) = 0;
  protected:
   ViERender() {}
   virtual ~ViERender() {}

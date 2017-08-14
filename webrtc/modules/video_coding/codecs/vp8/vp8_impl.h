@@ -140,8 +140,6 @@ class VP8DecoderImpl : public VP8Decoder {
 
   virtual int Reset();
 
-  virtual int Reset2(int width, int height);
-
   virtual VideoDecoder* Copy();
 
  private:

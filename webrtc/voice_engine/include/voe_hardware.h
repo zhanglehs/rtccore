@@ -99,11 +99,7 @@ public:
     virtual int ResetAudioDevice() { return -1; }
     virtual int AudioDeviceControl(unsigned int par1, unsigned int par2,
             unsigned int par3) { return -1; }
-#ifndef GXH_TEST_LOUD
-    virtual int SetLoudspeakerStatus(bool enable) = 0;
-#else
     virtual int SetLoudspeakerStatus(bool enable) { return -1; }
-#endif
     virtual int GetLoudspeakerStatus(bool& enabled) { return -1; }
     virtual int GetCPULoad(int& loadPercent) { return -1; }
 

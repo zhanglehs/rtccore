@@ -26,10 +26,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-
 public class WebRTCDemo extends Activity implements MenuStateProvider {
 
   // From http://developer.android.com/guide/topics/ui/actionbar.html
@@ -76,12 +72,7 @@ public class WebRTCDemo extends Activity implements MenuStateProvider {
       // User selected the already selected tab. Do nothing.
     }
   }
-    //gxh
-    public void writeFile(String filePath,String f){
-        
-    }
-    //
-  FileWriter g_fp = null;//gxh
+
   private NativeWebRtcContextRegistry contextRegistry = null;
   private MediaEngine mediaEngine = null;
   private Handler handler;
@@ -89,8 +80,6 @@ public class WebRTCDemo extends Activity implements MenuStateProvider {
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
-      writeFile("/storage/emulated/0/gxh-java-demo.txt", "start gxh webrtcdemo log 1 \n");
-      writeFile("/sdcard/gxh-java-demo.txt", "start gxh webrtcdemo log 2 \n");
     super.onCreate(savedInstanceState);
 
     // Global settings.

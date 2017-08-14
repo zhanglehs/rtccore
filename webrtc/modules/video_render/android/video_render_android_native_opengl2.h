@@ -86,8 +86,6 @@ class AndroidNativeOpenGl2Renderer: private VideoRenderAndroid {
       const float bottom,
       VideoRenderAndroid& renderer);
 
-  virtual void ChangeSurefaceSize(void *stream, int32_t width, int32_t height);
-
  private:
   jobject _javaRenderObj;
   jclass _javaRenderClass;

@@ -42,8 +42,7 @@ class ViERenderImpl
                               const float right, const float bottom);
   virtual int AddRenderer(const int render_id, RawVideoType video_input_format,
                           ExternalRenderer* renderer);
-  virtual int
-	  SetStartImage(const int render_id, const I420VideoFrame& videoFrame);
+
  protected:
   explicit ViERenderImpl(ViESharedData* shared_data);
   virtual ~ViERenderImpl();

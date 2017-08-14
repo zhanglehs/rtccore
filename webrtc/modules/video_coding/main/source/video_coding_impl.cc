@@ -262,10 +262,7 @@ class VideoCodingModuleImpl : public VideoCodingModule {
   int32_t Decode(uint16_t maxWaitTimeMs) override {
     return receiver_->Decode(maxWaitTimeMs);
   }
-  int32_t ResetDecoder2(int width, int height) override 
-  { 
-	  return receiver_->ResetDecoder2(width, height);
-  }
+
   int32_t ResetDecoder() override { return receiver_->ResetDecoder(); }
 
   int32_t ReceiveCodec(VideoCodec* currentReceiveCodec) const override {
@@ -291,8 +288,6 @@ class VideoCodingModuleImpl : public VideoCodingModule {
   }
 
   int32_t Delay() const override { return receiver_->Delay(); }
-
-  int32_t ExpectedDelay() const override { return receiver_->ExpectedDelay(); };
 
   uint32_t DiscardedPackets() const override {
     return receiver_->DiscardedPackets();

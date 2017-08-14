@@ -9,6 +9,32 @@
 {
   'targets': [
     {
+      'target_name': 'bwe_standalone',
+      'type': 'executable',
+      'dependencies': [
+        'matlab_plotting',
+        'rtp_rtcp',
+        'udp_transport',
+        '<(webrtc_root)/system_wrappers/system_wrappers.gyp:system_wrappers',
+      ],
+      'sources': [
+        'BWEStandAlone/BWEStandAlone.cc',
+        'BWEStandAlone/TestLoadGenerator.cc',
+        'BWEStandAlone/TestLoadGenerator.h',
+        'BWEStandAlone/TestSenderReceiver.cc',
+        'BWEStandAlone/TestSenderReceiver.h',
+      ], # source
+      'conditions': [
+          ['OS=="linux"', {
+              'cflags': [
+                  '-fexceptions', # enable exceptions
+                  ],
+              },
+           ],
+          ],
+    },
+
+    {
       'target_name': 'matlab_plotting',
       'type': 'static_library',
       'dependencies': [

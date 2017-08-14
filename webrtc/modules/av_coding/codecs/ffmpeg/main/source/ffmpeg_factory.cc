@@ -1,4 +1,4 @@
-//edit by zhangle
+ï»¿//edit by zhangle
 #include "webrtc/modules/av_coding/codecs/ffmpeg/main/source/ffmpeg_factory.h"
 
 #include "third_party/jsoncpp/source/include/json/json.h"
@@ -112,7 +112,7 @@ void initFFmpeg() {
   }
 }
 
-// ÊäÈë¸ñÊ½Ð´ËÀÎªÁËAV_SAMPLE_FMT_S16
+// è¾“å…¥æ ¼å¼å†™æ­»ä¸ºäº†AV_SAMPLE_FMT_S16
 int OpenAudioEncoder(MediaStream *mst, const lfrtcAudioEncodeParams *params, int *nb_sample) {
   *nb_sample = 0;
   if (!mst || !params) {
@@ -238,7 +238,7 @@ int OpenVideoEncoder(MediaStream *mst, const lfrtcVideoEncodeParams *params) {
   int bitsrate = params->bitrate;
   c->width = params->width;
   c->height = params->height;
-  // TODO: zhangle, time_base´ýÑÐ¾¿
+  // TODO: zhangle, time_baseå¾…ç ”ç©¶
   c->time_base.den = params->fps;
   c->time_base.num = 1;
   c->pix_fmt = FIXED_VIDEO_PIX_FMT;
@@ -263,7 +263,7 @@ int OpenVideoEncoder(MediaStream *mst, const lfrtcVideoEncodeParams *params) {
   if (!strcmp(params->preset, "")) {
     av_opt_set(c->priv_data, "preset", "superfast", 0);
     av_opt_set(c->priv_data, "tune", "zerolatency", 0);
-    // slice-max-size»ù±¾ÉÏ¹æ¶¨ÁËmax_nalu£¬Îª·½±ãudp´«Êä£¬½«×î´óÖµÉèÎª1300
+    // slice-max-sizeåŸºæœ¬ä¸Šè§„å®šäº†max_naluï¼Œä¸ºæ–¹ä¾¿udpä¼ è¾“ï¼Œå°†æœ€å¤§å€¼è®¾ä¸º1300
     av_opt_set(c->priv_data, "x264opts", "slice-max-size=1300", 0);
   }
   else {
@@ -336,8 +336,8 @@ int OpenVideoDecoder(MediaStream *mst, const lfrtcVideoDecodeParams *params) {
 
   c->thread_type = FF_THREAD_SLICE;
 
-  // Èç¹ûÃ¿´ÎËÍ¸ø½âÂëÆ÷µÄÊý¾Ý²»ÊÇÒ»¸öÍêÕûµÄÖ¡£¬ÄÇÃ´Ó¦¿ªÆôÏÂÃæµÄÈýÐÐ´úÂë£¬
-  // ´ËÊ±ffmpeg»áµÈµ½¼ì²âµ½ÏÂÒ»Ö¡Í¼ÏñµÄÍ·²ÅÈ¥½âÉÏÒ»Ö¡
+  // å¦‚æžœæ¯æ¬¡é€ç»™è§£ç å™¨çš„æ•°æ®ä¸æ˜¯ä¸€ä¸ªå®Œæ•´çš„å¸§ï¼Œé‚£ä¹ˆåº”å¼€å¯ä¸‹é¢çš„ä¸‰è¡Œä»£ç ï¼Œ
+  // æ­¤æ—¶ffmpegä¼šç­‰åˆ°æ£€æµ‹åˆ°ä¸‹ä¸€å¸§å›¾åƒçš„å¤´æ‰åŽ»è§£ä¸Šä¸€å¸§
   //if (mst->codec->capabilities & CODEC_CAP_TRUNCATED) {
   //  c->flags |= CODEC_FLAG_TRUNCATED;
   //}
@@ -452,7 +452,7 @@ int lfrtcEncodeVideo(void *ctx, char *inBuf[3], int inLinesize[3], char *outBuf[
   frame->data[0] = (uint8_t *)inBuf[0];
   frame->data[1] = (uint8_t *)inBuf[1];
   frame->data[2] = (uint8_t *)inBuf[2];
-  // ²»ÄÜ±£Ö¤linesize[0] == c->width£¬Òò´ËÐèÒªµ÷ÓÃÕß´«Èë
+  // ä¸èƒ½ä¿è¯linesize[0] == c->widthï¼Œå› æ­¤éœ€è¦è°ƒç”¨è€…ä¼ å…¥
   frame->linesize[0] = inLinesize[0];
   frame->linesize[1] = inLinesize[1];
   frame->linesize[2] = inLinesize[2];
@@ -544,7 +544,7 @@ int lfrtcDecodeVideo(void *ctx, char *inBuf[3], int inLen[3], char *outBuf[3], i
 
   frame->key_frame = 0;
   while (pkt.size > 0) {
-    // TODO: zhangle£¬ÑÐ¾¿ffmpeg_decoder_error
+    // TODO: zhangleï¼Œç ”ç©¶ffmpeg_decoder_error
     ffmpeg_decoder_error = 0;
     int got_picture = 0;
     int usedLen = avcodec_decode_video2(c, frame, &got_picture, &pkt);
@@ -979,7 +979,7 @@ int lfRtcAudioEncoderInternal::Process(unsigned char *data[3], int len[3]) {
   pkt.size = 0;
 
   m_frame->data[0] = data[0];
-  // ±¾¶Î´úÂëÊµ¼ÊÉÏÃ»ÓÐÓÃµ½pts£¬Êµ¼ÊÉÏÕâÀï¿ÉÒÔ²»ÓÃ¸³Öµ
+  // æœ¬æ®µä»£ç å®žé™…ä¸Šæ²¡æœ‰ç”¨åˆ°ptsï¼Œå®žé™…ä¸Šè¿™é‡Œå¯ä»¥ä¸ç”¨èµ‹å€¼
   m_frame->pts = m_codec_ctx->frame_number * m_frame->nb_samples;
 
   int got_output = 0;
@@ -997,8 +997,8 @@ int lfRtcAudioEncoderInternal::Process(unsigned char *data[3], int len[3]) {
   }
 
   if (m_sdp_flag) {
-    // extradata[0]ºÍextradata[1]×é³ÉÁËAudioSpecificConfig½á¹¹
-    // AudioSpecificConfig½á¹¹ÓÉISO-14496-3 Audio¹æ¶¨
+    // extradata[0]å’Œextradata[1]ç»„æˆäº†AudioSpecificConfigç»“æž„
+    // AudioSpecificConfigç»“æž„ç”±ISO-14496-3 Audioè§„å®š
     // 5bits, audioObjectType
     // 4bits, samplingFrequencyIndex
     // 4bits, channelConfiguration
@@ -1133,7 +1133,7 @@ int lfRtcAudioEncoderInternal::OpenInternal() {
   }
 
   while (m_codec) {
-    // Ä³¸öaac±àÂëÆ÷²»Ò»¶¨Ö§³ÖÎÒÃÇÒªÇóµÄsample_fmt¡¢sample_rate¡¢channels£¬ËùÒÔµÃ°¤¸ö³¢ÊÔ
+    // æŸä¸ªaacç¼–ç å™¨ä¸ä¸€å®šæ”¯æŒæˆ‘ä»¬è¦æ±‚çš„sample_fmtã€sample_rateã€channelsï¼Œæ‰€ä»¥å¾—æŒ¨ä¸ªå°è¯•
     if (m_codec->id == AV_CODEC_ID_AAC) {
       AVCodecContext *codec_ctx
         = CreateAudioCodec(m_codec, FIXED_AUDIO_SAMPLE_FMT, m_params.sample_rate, m_params.channel_count, m_params.bitrate);
@@ -1458,12 +1458,12 @@ int lfRtcVideoEncoderInternal::Process(unsigned char *data[3], int linesize[3], 
   pkt.data = NULL;
   pkt.size = 0;
 
-  // ptsÔÚÓÐbÖ¡Ê±ÓÐÓÃ
+  // ptsåœ¨æœ‰bå¸§æ—¶æœ‰ç”¨
   m_frame->pts = m_codec_ctx->frame_number;
   m_frame->data[0] = (uint8_t *)data[0];
   m_frame->data[1] = (uint8_t *)data[1];
   m_frame->data[2] = (uint8_t *)data[2];
-  // ²»ÄÜ±£Ö¤linesize[0] == c->width£¬Òò´ËÐèÒªµ÷ÓÃÕß´«Èë
+  // ä¸èƒ½ä¿è¯linesize[0] == c->widthï¼Œå› æ­¤éœ€è¦è°ƒç”¨è€…ä¼ å…¥
   m_frame->linesize[0] = linesize[0];
   m_frame->linesize[1] = linesize[1];
   m_frame->linesize[2] = linesize[2];
@@ -1568,7 +1568,7 @@ int lfRtcVideoEncoderInternal::OpenInternal() {
   if (!strcmp(m_params.preset, "")) {
     av_opt_set(m_codec_ctx->priv_data, "preset", "superfast", 0);
     av_opt_set(m_codec_ctx->priv_data, "tune", "zerolatency", 0);
-    // slice-max-size»ù±¾ÉÏ¹æ¶¨ÁËmax_nalu£¬Îª·½±ãudp´«Êä£¬½«×î´óÖµÉèÎª1300
+    // slice-max-sizeåŸºæœ¬ä¸Šè§„å®šäº†max_naluï¼Œä¸ºæ–¹ä¾¿udpä¼ è¾“ï¼Œå°†æœ€å¤§å€¼è®¾ä¸º1300
     av_opt_set(m_codec_ctx->priv_data, "x264opts", "slice-max-size=1300", 0);
   }
   else {
@@ -1715,13 +1715,13 @@ int lfRtcVideoDecoderInternal::Process(unsigned char *inBuf, int inLen, unsigned
     int filter_buf_size = 0;
     int ret = av_bitstream_filter_filter(m_bsfc, m_codec_ctx, NULL, &filter_buf, &filter_buf_size, pkt.data, pkt.size, pkt.flags & AV_PKT_FLAG_KEY);
     if (ret > 0) {
-      // ´ËÊ±ÓÐÖØÐÂ·ÖÅäÄÚ´æ
+      // æ­¤æ—¶æœ‰é‡æ–°åˆ†é…å†…å­˜
       pkt.data = filter_buf;
       pkt.size = filter_buf_size;
       free_buf = filter_buf;
     }
     else if (ret == 0 && filter_buf != NULL) {
-      // ´ËÊ±Î´ÖØÐÂ·ÖÅäÄÚ´æ£¬µ«filter_bufÖ¸ÏòÔ­ÄÚ´æµÄÄ³¸öµØ·½
+      // æ­¤æ—¶æœªé‡æ–°åˆ†é…å†…å­˜ï¼Œä½†filter_bufæŒ‡å‘åŽŸå†…å­˜çš„æŸä¸ªåœ°æ–¹
       pkt.data = filter_buf;
       pkt.size = filter_buf_size;
     }
@@ -1733,7 +1733,7 @@ int lfRtcVideoDecoderInternal::Process(unsigned char *inBuf, int inLen, unsigned
     m_decoded_data[0].clear();
     m_decoded_data[1].clear();
     m_decoded_data[2].clear();
-    // TODO: zhangle£¬ÑÐ¾¿ffmpeg_decoder_error
+    // TODO: zhangleï¼Œç ”ç©¶ffmpeg_decoder_error
     ffmpeg_decoder_error = 0;
     int got_picture = 0;
     int usedLen = avcodec_decode_video2(m_codec_ctx, m_frame, &got_picture, &pkt);
@@ -1755,7 +1755,7 @@ int lfRtcVideoDecoderInternal::Process(unsigned char *inBuf, int inLen, unsigned
         outBuf[2] = &m_decoded_data[2][0];
       }
 
-      // ÏÂÃæµÄÕâ¶Î´úÂë¾ÍÊÇÎªÁËÊ¹linesize == width
+      // ä¸‹é¢çš„è¿™æ®µä»£ç å°±æ˜¯ä¸ºäº†ä½¿linesize == width
       //Y
       {
         unsigned char *dst_buf = outBuf[0];
@@ -1888,8 +1888,8 @@ int lfRtcVideoDecoderInternal::OpenInternal() {
 
   m_codec_ctx->thread_type = FF_THREAD_SLICE;
 
-  // Èç¹ûÃ¿´ÎËÍ¸ø½âÂëÆ÷µÄÊý¾Ý²»ÊÇÒ»¸öÍêÕûµÄÖ¡£¬ÄÇÃ´Ó¦¿ªÆôÏÂÃæµÄÈýÐÐ´úÂë£¬
-  // ´ËÊ±ffmpeg»áµÈµ½¼ì²âµ½ÏÂÒ»Ö¡Í¼ÏñµÄÍ·²ÅÈ¥½âÉÏÒ»Ö¡
+  // å¦‚æžœæ¯æ¬¡é€ç»™è§£ç å™¨çš„æ•°æ®ä¸æ˜¯ä¸€ä¸ªå®Œæ•´çš„å¸§ï¼Œé‚£ä¹ˆåº”å¼€å¯ä¸‹é¢çš„ä¸‰è¡Œä»£ç ï¼Œ
+  // æ­¤æ—¶ffmpegä¼šç­‰åˆ°æ£€æµ‹åˆ°ä¸‹ä¸€å¸§å›¾åƒçš„å¤´æ‰åŽ»è§£ä¸Šä¸€å¸§
   //if (m_codec->capabilities & CODEC_CAP_TRUNCATED) {
   //  m_codec_ctx->flags |= CODEC_FLAG_TRUNCATED;
   //}

@@ -16,9 +16,6 @@
         '<(webrtc_root)/modules/modules.gyp:paced_sender',
         '<(webrtc_root)/modules/modules.gyp:remote_bitrate_estimator',
       ],
-      'WARNING_CXXFLAGS':[
-	'-Wno-error',
-      ],
       'sources': [
         # Common
         'interface/fec_receiver.h',

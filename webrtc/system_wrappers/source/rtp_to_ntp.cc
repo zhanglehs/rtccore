@@ -54,8 +54,6 @@ bool CompensateForWrapAround(uint32_t new_timestamp,
   return true;
 }
 
-static int g_empty_ntp_count_debug = 0;
-
 bool UpdateRtcpList(uint32_t ntp_secs,
                     uint32_t ntp_frac,
                     uint32_t rtp_timestamp,
@@ -65,7 +63,6 @@ bool UpdateRtcpList(uint32_t ntp_secs,
   if (ntp_secs == 0 && ntp_frac == 0) {
     return false;
   }
-  g_empty_ntp_count_debug = 0;
 
   RtcpMeasurement measurement;
   measurement.ntp_secs = ntp_secs;

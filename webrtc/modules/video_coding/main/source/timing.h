@@ -78,8 +78,6 @@ class VCMTiming {
   // render delay.
   uint32_t TargetVideoDelay() const;
 
-  uint32_t ExpectedVideoDelay() const;
-
   // Calculates whether or not there is enough time to decode a frame given a
   // certain amount of processing time.
   bool EnoughTimeToDecode(uint32_t available_processing_time_ms) const;

@@ -148,14 +148,6 @@ I420Decoder::~I420Decoder() {
 }
 
 int
-I420Decoder::Reset2(int width, int height) {
-	if (width < 0 || height < 0)
-	{
-		return -1;
-	}
-	return WEBRTC_VIDEO_CODEC_OK;
-}
-int
 I420Decoder::Reset() {
   return WEBRTC_VIDEO_CODEC_OK;
 }

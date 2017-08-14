@@ -168,9 +168,6 @@ class VideoReceiver {
   int RegisterRenderBufferSizeCallback(VCMRenderBufferSizeCallback* callback);
 
   int32_t Decode(uint16_t maxWaitTimeMs);
-
-  int32_t ResetDecoder2(int width, int height);
-
   int32_t ResetDecoder();
 
   int32_t ReceiveCodec(VideoCodec* currentReceiveCodec) const;
@@ -182,7 +179,6 @@ class VideoReceiver {
   int32_t SetMinimumPlayoutDelay(uint32_t minPlayoutDelayMs);
   int32_t SetRenderDelay(uint32_t timeMS);
   int32_t Delay() const;
-  int32_t ExpectedDelay() const;
   uint32_t DiscardedPackets() const;
 
   int SetReceiverRobustnessMode(ReceiverRobustness robustnessMode,
@@ -249,10 +245,7 @@ class VideoReceiver {
   VCMProcessTimer _receiveStatsTimer;
   VCMProcessTimer _retransmissionTimer;
   VCMProcessTimer _keyRequestTimer;
-    VideoCodec _receiveCodec;
-    int32_t _numberOfCores;
-    bool _requireKeyFrame;
-    bool _reg;
+  void *_userdata;
 };
 
 }  // namespace vcm

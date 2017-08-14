@@ -20,11 +20,6 @@
 #include <tchar.h>
 #endif
 
-#ifndef GXH_TEST
-#define WIN_W   640
-#define WIN_H   480
-#endif
-
 ViEWindowCreator::ViEWindowCreator() {
 #ifndef WEBRTC_ANDROID
   window_manager_ =
@@ -44,17 +39,10 @@ ViEAutoTestWindowManagerInterface*
 #else
   char window1Title[1024] = "ViE Autotest Window 1";
   char window2Title[1024] = "ViE Autotest Window 2";
-      printf("CreateTwoWindows \n");
 #endif
 
-#ifndef GXH_TEST
-      AutoTestRect window1Size(WIN_W, WIN_H, 600, 100);
-      AutoTestRect window2Size(WIN_W, WIN_H, 1000, 100);
-#else
   AutoTestRect window1Size(352, 288, 600, 100);
   AutoTestRect window2Size(352, 288, 1000, 100);
-#endif
-      
   window_manager_->CreateWindows(window1Size, window2Size, window1Title,
                                  window2Title);
   window_manager_->SetTopmostWindow();

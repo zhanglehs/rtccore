@@ -179,7 +179,7 @@ ModuleVideoRenderImpl::ModuleVideoRenderImpl(
 #elif defined(WEBRTC_ANDROID)
         case kRenderAndroid:
         {
-            if(0)//AndroidNativeOpenGl2Renderer::UseOpenGL2(window))
+            if(AndroidNativeOpenGl2Renderer::UseOpenGL2(window))
             {
                 AndroidNativeOpenGl2Renderer* ptrRenderer = NULL;
                 ptrRenderer = new AndroidNativeOpenGl2Renderer(_id, videoRenderType, window, _fullScreen);

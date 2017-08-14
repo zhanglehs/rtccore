@@ -60,9 +60,6 @@ class VideoDecoder {
       DecodedImageCallback* callback) = 0;
 
   virtual int32_t Release() = 0;
-#ifndef GXH_TEST_H264
-  virtual int32_t Reset2(int width, int height) = 0;
-#endif
   virtual int32_t Reset() = 0;
 
   virtual int32_t SetCodecConfigParameters(const uint8_t* /*buffer*/,

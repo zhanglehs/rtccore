@@ -9,7 +9,10 @@
   'conditions': [
     ['include_tests==1', {
       'includes': [
+        'libjingle/xmllite/xmllite_tests.gypi',
+        'libjingle/xmpp/xmpp_tests.gypi',
         'p2p/p2p_tests.gypi',
+        'sound/sound_tests.gypi',
         'webrtc_tests.gypi',
       ],
     }],
@@ -30,7 +33,7 @@
       'tools/tools.gyp:*',
       'video_engine/video_engine.gyp:*',
       'voice_engine/voice_engine.gyp:*',
-	  'avengine/avengine.gyp:*',	  
+      'avengine/avengine.gyp:*',
       '<(webrtc_vp8_dir)/vp8.gyp:*',
       '<(webrtc_vp9_dir)/vp9.gyp:*',
     ],

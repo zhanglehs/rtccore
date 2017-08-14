@@ -628,12 +628,6 @@ bool VCMCodecDataBase::SupportsRenderScheduling() const {
   if (current_dec_is_external_) {
     const VCMExtDecoderMapItem* ext_item = FindExternalDecoderItem(
         receive_codec_.plType);
-
-	if (ext_item == NULL)
-	{
-		return false;// -1;
-	}
-
     render_timing = ext_item->internal_render_timing;
   }
   return render_timing;

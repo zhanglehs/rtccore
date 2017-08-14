@@ -37,9 +37,7 @@ class MediaCodecVideoDecoder : public VideoDecoder {
   virtual int32_t Release();
 
   virtual int32_t Reset();
-#ifndef GXH_TEST_H264
-  virtual int32_t Reset2(int width, int height);
-#endif
+
   virtual int32_t SetCodecConfigParameters(const uint8_t* /*buffer*/,
                                            int32_t /*size*/) {
     return WEBRTC_VIDEO_CODEC_ERROR;

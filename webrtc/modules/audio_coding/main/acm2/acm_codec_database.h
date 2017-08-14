@@ -118,7 +118,6 @@ class ACMCodecDB {
   // Mono and stereo
   enum {kOpus = -1};
 #endif
-
 #ifndef WEBRTC_CODEC_AVT
   enum {kAVT = -1};
 #endif

@@ -1073,14 +1073,6 @@ VP8DecoderImpl::~VP8DecoderImpl() {
   inited_ = true;  // in order to do the actual release
   Release();
 }
-int
-VP8DecoderImpl::Reset2(int width, int height) {
-	if (width < 0 || height < 0)
-	{
-		return -1;
-	}
-	return WEBRTC_VIDEO_CODEC_OK;
-}
 
 int VP8DecoderImpl::Reset() {
   if (!inited_) {

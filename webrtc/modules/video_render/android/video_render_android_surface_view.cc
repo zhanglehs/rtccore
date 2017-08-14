@@ -224,11 +224,6 @@ AndroidSurfaceViewRenderer::CreateAndroidRenderChannel(
   return NULL;
 }
 
-void AndroidSurfaceViewRenderer::ChangeSurefaceSize(void *stream0, int32_t width, int32_t height) {
-  AndroidSurfaceViewChannel* stream = (AndroidSurfaceViewChannel*)stream0;
-  stream->ChangeSurefaceSize(width, height);
-}
-
 AndroidSurfaceViewChannel::AndroidSurfaceViewChannel(
     uint32_t streamId,
     JavaVM* jvm,
@@ -291,41 +286,6 @@ AndroidSurfaceViewChannel::~AndroidSurfaceViewChannel() {
       }
     }
   }
-}
-
-void AndroidSurfaceViewChannel::ChangeSurefaceSize(int32_t width, int32_t height) {
-  _renderCritSect.Enter();
-
-  bool isAttached = false;
-  JNIEnv* env = NULL;
-  if (_jvm->GetEnv((void**)&env, JNI_VERSION_1_4) != JNI_OK) {
-    // try to attach the thread and get the env
-    // Attach this thread to JVM
-    jint res = _jvm->AttachCurrentThread(&env, NULL);
-
-    // Get the JNI env for this thread
-    if ((res < 0) || !env) {
-      WEBRTC_TRACE(kTraceError,
-        kTraceVideoRenderer,
-        _id,
-        "%s: Could not attach thread to JVM (%d, %p)",
-        __FUNCTION__,
-        res,
-        env);
-      return;
-    }
-    isAttached = true;
-  }
-  env->CallVoidMethod(_javaRenderObj, _changeSurefaceSizeCid, width, height);
-  if (isAttached) {
-    if (_jvm->DetachCurrentThread() < 0) {
-      WEBRTC_TRACE(kTraceWarning,
-        kTraceVideoRenderer,
-        _id,
-        "%s: Could not detach thread from JVM", __FUNCTION__);
-    }
-  }
-  _renderCritSect.Leave();
 }
 
 int32_t AndroidSurfaceViewChannel::Init(
@@ -417,10 +377,6 @@ int32_t AndroidSurfaceViewChannel::Init(
                  __FUNCTION__);
     return -1; /* exception thrown */
   }
-
-  _changeSurefaceSizeCid = env->GetMethodID(javaRenderClass,
-                                            "ChangeSurefaceSize",
-                                            "(II)V");
 
   // get the method ID for the SetCoordinates function
   _setCoordinatesCid = env->GetMethodID(javaRenderClass,

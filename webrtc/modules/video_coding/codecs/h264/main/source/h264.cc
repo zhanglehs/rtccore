@@ -30,11 +30,6 @@ H264Decoder::~H264Decoder() {
 }
 
 int
-H264Decoder::Reset2(int width, int height) {
-  return WEBRTC_VIDEO_CODEC_OK;
-}
-
-int
 H264Decoder::H264Dec(const webrtc::EncodedImage& inputImage) {
   if (_pDecHandle == NULL && inputImage._length <= 0) {
     return WEBRTC_VIDEO_CIDEC_DECODE_FAIL;

@@ -96,15 +96,6 @@ class VP9DecoderImpl : public VP9Decoder {
 
   int Reset() override;
 
-  int Reset2(int width, int height) override
-  {
-	  if (width < 0 || height < 0)
-	  {
-		  return -1;
-	  }
-	  return WEBRTC_VIDEO_CODEC_OK;
-  }
-
  private:
   int ReturnFrame(const vpx_image_t* img, uint32_t timeStamp);
 

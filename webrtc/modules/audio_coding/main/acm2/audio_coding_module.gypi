@@ -137,6 +137,24 @@
              '../test/utility.cc',
            ],
         }, # delay_test
+        {
+          'target_name': 'insert_packet_with_timing',
+          'type': 'executable',
+          'dependencies': [
+            'audio_coding_module',
+            '<(DEPTH)/testing/gtest.gyp:gtest',
+            '<(webrtc_root)/common.gyp:webrtc_common',
+            '<(webrtc_root)/test/test.gyp:test_support',
+            '<(webrtc_root)/system_wrappers/system_wrappers.gyp:system_wrappers',
+            '<(webrtc_root)/system_wrappers/system_wrappers.gyp:system_wrappers_default',
+            '<(DEPTH)/third_party/gflags/gflags.gyp:gflags',
+          ],
+          'sources': [
+             '../test/insert_packet_with_timing.cc',
+             '../test/Channel.cc',
+             '../test/PCMFile.cc',
+           ],
+        }, # delay_test
       ],
     }],
   ],

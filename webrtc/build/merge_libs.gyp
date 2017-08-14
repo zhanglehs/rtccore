@@ -14,6 +14,19 @@
   },
   'targets': [
     {
+      'target_name': 'no_op',
+      'type': 'executable',
+      'dependencies': [
+        '<@(merge_libs_dependencies)',
+        '../webrtc.gyp:webrtc',
+        '../sound/sound.gyp:rtc_sound',
+        '../libjingle/xmllite/xmllite.gyp:rtc_xmllite',
+        '../libjingle/xmpp/xmpp.gyp:rtc_xmpp',
+        '../p2p/p2p.gyp:rtc_p2p',
+      ],
+      'sources': ['no_op.cc',],
+    },
+    {
       'target_name': 'merged_lib',
       'type': 'none',
       'dependencies': [

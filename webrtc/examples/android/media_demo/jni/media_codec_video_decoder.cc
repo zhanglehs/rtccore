@@ -71,16 +71,7 @@ int32_t MediaCodecVideoDecoder::Release() {
   // TODO(hellner): this maps nicely to MediaCodecVideoDecoder::dispose().
   return WEBRTC_VIDEO_CODEC_OK;
 }
-#ifndef GXH_TEST_H264
-int32_t MediaCodecVideoDecoder::Reset2(int width, int height){
-    // TODO(hellner): implement. MediaCodec::stop() followed by
-    // MediaCodec::start()?
-    if (width < 0 || height < 0) {
-        return -1;
-    }
-    return WEBRTC_VIDEO_CODEC_OK;
-}
-#endif
+
 int32_t MediaCodecVideoDecoder::Reset() {
   // TODO(hellner): implement. MediaCodec::stop() followed by
   // MediaCodec::start()?

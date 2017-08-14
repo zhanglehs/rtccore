@@ -10,6 +10,14 @@
   'includes': [ 'common.gypi', ],
   'targets': [
     {
+      'target_name': 'no_op',
+      'type': 'executable',
+      'dependencies': [
+        '../voice_engine/voice_engine.gyp:voice_engine',
+      ],
+      'sources': [ 'no_op.cc', ],
+    },
+    {
       'target_name': 'merge_voice_libs',
       'type': 'none',
       'dependencies': [

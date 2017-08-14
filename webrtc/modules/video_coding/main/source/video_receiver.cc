@@ -84,10 +84,7 @@ VideoReceiver::VideoReceiver(Clock* clock, EventFactory* event_factory)
 #ifdef DEBUG_DECODER_BIT_STREAM
   _bitStreamBeforeDecoder = fopen("decoderBitStream.bit", "wb");
 #endif
-          memset((void *)&_receiveCodec, 0, sizeof(VideoCodec));
-          _numberOfCores = 0;
-          _requireKeyFrame = false;
-          _reg = false;
+  _userdata = NULL;
 }
 
 VideoReceiver::~VideoReceiver() {
@@ -133,8 +130,8 @@ int32_t VideoReceiver::Process() {
                                               jitter_buffer_ms,
                                               min_playout_delay_ms,
                                               render_delay_ms);
-      if (_receiveCodec.object) {
-        SendReport(_receiveCodec.object, decode_ms, max_decode_ms, current_delay_ms, target_delay_ms, jitter_buffer_ms);
+      if (_userdata) {
+        SendReport(_userdata, decode_ms, max_decode_ms, current_delay_ms, target_delay_ms, jitter_buffer_ms);
       }
     }
 
@@ -153,7 +150,6 @@ int32_t VideoReceiver::Process() {
       CriticalSectionScoped cs(process_crit_sect_.get());
       request_key_frame = _scheduleKeyRequest && _frameTypeCallback != NULL;
     }
-
     if (request_key_frame) {
       const int32_t ret = RequestKeyFrame();
       if (ret != VCM_OK && returnValue == VCM_OK) {
@@ -527,25 +523,6 @@ int32_t VideoReceiver::Decode(const VCMEncodedFrame& frame) {
 }
 
 // Reset the decoder state
-int32_t VideoReceiver::ResetDecoder2(int width, int height) {
-	bool reset_key_request = false;
-	{
-		CriticalSectionScoped cs(_receiveCritSect);
-		if (_decoder != NULL) {
-			_receiver.Initialize();
-			_timing.Reset();
-			reset_key_request = true;
-
-			_decoder->Reset2(width, height);
-
-		}
-	}
-	if (reset_key_request) {
-		CriticalSectionScoped cs(process_crit_sect_.get());
-		_scheduleKeyRequest = false;
-	}
-	return VCM_OK;
-}
 int32_t VideoReceiver::ResetDecoder() {
   bool reset_key_request = false;
   {
@@ -576,17 +553,8 @@ int32_t VideoReceiver::RegisterReceiveCodec(const VideoCodec* receiveCodec,
           receiveCodec, numberOfCores, requireKeyFrame)) {
     return -1;
   }
-    //int size = sizeof(VideoCodec);
-    _receiveCodec.cb = receiveCodec->cb;
-    _receiveCodec.object = receiveCodec->object;
-    _receiveCodec.chanId = receiveCodec->chanId;
-    _receiveCodec.height = receiveCodec->height;
-    _receiveCodec.width = receiveCodec->width;
-    _receiveCodec.codecSpecific.H264 = receiveCodec->codecSpecific.H264;
-    _receiveCodec = *receiveCodec;
-    _numberOfCores = numberOfCores;
-    _requireKeyFrame = requireKeyFrame;
 
+  _userdata = receiveCodec->object;
   return 0;
 }
 
@@ -622,23 +590,6 @@ int32_t VideoReceiver::IncomingPacket(const uint8_t* incomingPayload,
     payloadLength = 0;
   }
   const VCMPacket packet(incomingPayload, payloadLength, rtpInfo);
-
-  if (_reg == false)
-  {
-	  _receiveCodec.height = rtpInfo.type.Video.height;// packet.height;
-	  _receiveCodec.width = rtpInfo.type.Video.width;//packet.width;
-	  if (!_codecDataBase.RegisterReceiveCodec(
-		  &_receiveCodec, _numberOfCores, _requireKeyFrame)) {
-		  return -1;
-	  }
-	  _reg = true;
-  }
-  if (_receiveCodec.height != rtpInfo.type.Video.height || _receiveCodec.width != rtpInfo.type.Video.width)
-  {
-	  ResetDecoder2(rtpInfo.type.Video.width, rtpInfo.type.Video.height);
-	  _receiveCodec.height = rtpInfo.type.Video.height;// packet.height;
-	  _receiveCodec.width = rtpInfo.type.Video.width;//packet.width;
-  }
   int32_t ret = _receiver.InsertPacket(packet, rtpInfo.type.Video.width,
                                        rtpInfo.type.Video.height);
   // TODO(holmer): Investigate if this somehow should use the key frame
@@ -669,8 +620,6 @@ int32_t VideoReceiver::SetRenderDelay(uint32_t timeMS) {
 
 // Current video delay
 int32_t VideoReceiver::Delay() const { return _timing.TargetVideoDelay(); }
-
-int32_t VideoReceiver::ExpectedDelay() const { return _timing.ExpectedVideoDelay(); }
 
 // Nack list
 int32_t VideoReceiver::NackList(uint16_t* nackList, uint16_t* size) {
