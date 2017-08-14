@@ -35,6 +35,7 @@ AndroidSurfaceViewRenderer::AndroidSurfaceViewRenderer(
     VideoRenderAndroid(id,videoRenderType,window,fullscreen),
     _javaRenderObj(NULL),
     _javaRenderClass(NULL) {
+  _javaStopCid = NULL;
 }
 
 AndroidSurfaceViewRenderer::~AndroidSurfaceViewRenderer() {
@@ -63,6 +64,10 @@ AndroidSurfaceViewRenderer::~AndroidSurfaceViewRenderer() {
       else {
         isAttached = true;
       }
+    }
+
+    if (_javaStopCid) {
+      env->CallVoidMethod(_javaRenderObj, _javaStopCid);
     }
     env->DeleteGlobalRef(_javaRenderObj);
     env->DeleteGlobalRef(_javaRenderClass);
@@ -185,6 +190,8 @@ int32_t AndroidSurfaceViewRenderer::Init() {
                  __FUNCTION__);
     return -1;
   }
+
+  _javaStopCid = env->GetMethodID(_javaRenderClass, "Stop", "()V");
 
   // Detach this thread if it was attached
   if (isAttached) {

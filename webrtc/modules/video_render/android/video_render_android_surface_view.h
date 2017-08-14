@@ -80,6 +80,7 @@ class AndroidSurfaceViewRenderer : private VideoRenderAndroid {
  private:
   jobject _javaRenderObj;
   jclass _javaRenderClass;
+  jmethodID _javaStopCid;
 };
 
 }  // namespace webrtc
