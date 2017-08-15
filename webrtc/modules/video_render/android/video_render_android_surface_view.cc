@@ -37,7 +37,7 @@ AndroidSurfaceViewRenderer::AndroidSurfaceViewRenderer(
     _javaRenderObj(NULL),
     _javaRenderClass(NULL) {
   _javaStopCid = NULL;
-  if (GetGlobalConfig()->android_render_mode == 2) {
+  if (GetGlobalConfig()->android_render_mode == 0) {
     _nativeWindowManager = new NativeWindowAdapter();
   }
   else {
@@ -183,7 +183,7 @@ int32_t AndroidSurfaceViewRenderer::Init() {
   // get the method ID for the constructor
   jmethodID cid = env->GetMethodID(_javaRenderClass,
                                    "<init>",
-                                   "(Landroid/view/Surface;)V");
+                                   "(Landroid/view/Surface;Z)V");
   if (cid == NULL) {
     WEBRTC_TRACE(kTraceError,
                  kTraceVideoRenderer,
@@ -196,7 +196,8 @@ int32_t AndroidSurfaceViewRenderer::Init() {
   // construct the object
   jobject javaRenderObjLocal = env->NewObject(_javaRenderClass,
                                               cid,
-                                              _ptrWindow);
+                                              _ptrWindow,
+                                              GetGlobalConfig()->android_render_mode == 1);
   if (!javaRenderObjLocal) {
     WEBRTC_TRACE(kTraceError,
                  kTraceVideoRenderer,

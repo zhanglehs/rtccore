@@ -8,7 +8,7 @@ struct lfrtcGlobalConfig {
   unsigned int PlostpacketToScreen; // <= number of packet int P frame to screen
   unsigned int is_yuvDump;          // yuv dump
   unsigned int playout_delay_ms;
-  unsigned int android_render_mode; // 0: software, 1: java gles, 2: native_window, 3: GLSurfaceView
+  unsigned int android_render_mode; // 0: native_window, 1: java gles, 2: software, 3: GLSurfaceView
   lfrtcGlobalConfig() {
     is_lostpacketStrategy = 1;
     IlostpacketToScreen = 0;
