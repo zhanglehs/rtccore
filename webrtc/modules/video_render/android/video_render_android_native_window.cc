@@ -4,7 +4,11 @@ extern "C" {
 #include "libavutil/imgutils.h"
 }
 
+#include <android/log.h>
+#include <assert.h>
+
 namespace {
+const char *android_log_tag = "webrtc_nativewindow";
 
 #ifndef IJKMIN
 #define IJKMIN(a, b)    ((a) < (b) ? (a) : (b))
@@ -208,7 +212,7 @@ namespace {
   };
 
   AndroidHalFourccDescriptor *native_window_get_desc(int fourcc_or_hal) {
-    for (int i = 0; i < sizeof(g_hal_fcc_map)/sizeof(g_hal_fcc_map[0]); ++i) {
+    for (unsigned int i = 0; i < sizeof(g_hal_fcc_map)/sizeof(g_hal_fcc_map[0]); ++i) {
       AndroidHalFourccDescriptor *desc = &g_hal_fcc_map[i];
       if ((int)desc->fcc_or_hal == fourcc_or_hal)
         return desc;
@@ -227,7 +231,7 @@ namespace {
 
     AndroidHalFourccDescriptor *image_desc = native_window_get_desc(frame->format);
     if (image_desc == NULL) {
-      __android_log_print("%s: unknown frame format: %u", __FUNCTION__, frame->format);
+      __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: unknown frame format: %u", __FUNCTION__, frame->format);
       return -1;
     }
 
@@ -236,11 +240,11 @@ namespace {
     if (window_desc == NULL || window_desc->hal_format != image_desc->hal_format) {
       int retval = ANativeWindow_setBuffersGeometry(native_window, image_width, image_height, image_desc->hal_format);
       if (retval < 0) {
-        __android_log_print("%s: ANativeWindow_setBuffersGeometry failed, width=%d, height=%d, format=%d, retval=%d", __FUNCTION__, image_width, image_height, image_desc->hal_format, retval);
+        __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: ANativeWindow_setBuffersGeometry failed, width=%d, height=%d, format=%d, retval=%d", __FUNCTION__, image_width, image_height, image_desc->hal_format, retval);
         return retval;
       }
       if (window_desc == NULL) {
-        __android_log_print("%s: unknown window format: %d", __FUNCTION__, window_format);
+        __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: unknown window format: %d", __FUNCTION__, window_format);
         return -1;
       }
     }
@@ -248,14 +252,14 @@ namespace {
     ANativeWindow_Buffer window_buffer;
     int retval = ANativeWindow_lock(native_window, &window_buffer, NULL);
     if (retval < 0) {
-      __android_log_print("%s: ANativeWindow_lock failed, retval=%d", __FUNCTION__, retval);
+      __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: ANativeWindow_lock failed, retval=%d", __FUNCTION__, retval);
       return retval;
     }
     if (window_buffer.width != image_width || window_buffer.height != image_height) {
-      __android_log_print("%s: unexpected native window buffer (%p)(w:%d, h:%d, fmt:'%.4s'0x%x), expecting (w:%d, h:%d, fmt:'%.4s'0x%x)",
+      __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: unexpected native window buffer (%p)(w:%d, h:%d, fmt:'%.4s'0x%x), expecting (w:%d, h:%d, fmt:'%.4s'0x%x)",
         __FUNCTION__, native_window,
-        out_buffer.width, out_buffer.height, (char*)&window_buffer.format, window_buffer.format,
-        image_width, image_height, (char*)&image_desc->format, image_desc->format);
+        window_buffer.width, window_buffer.height, (char*)&window_buffer.format, window_buffer.format,
+        image_width, image_height, (char*)&frame->format, frame->format);
       // TODO: 8 set all black
       ANativeWindow_unlockAndPost(native_window);
       ANativeWindow_setBuffersGeometry(native_window, image_width, image_height, image_desc->hal_format);
@@ -264,13 +268,13 @@ namespace {
 
     int render_ret = window_desc->render(&window_buffer, frame);
     if (render_ret < 0) {
-      __android_log_print("%s: render failed, retval=%d", __FUNCTION__, render_ret);
+      __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: render failed, retval=%d", __FUNCTION__, render_ret);
       // TODO: 8 set all black
     }
 
     retval = ANativeWindow_unlockAndPost(native_window);
     if (retval < 0) {
-      __android_log_print("%s: ANativeWindow_unlockAndPost failed, retval=%d", __FUNCTION__, retval);
+      __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: ANativeWindow_unlockAndPost failed, retval=%d", __FUNCTION__, retval);
       return retval;
     }
 
@@ -289,7 +293,7 @@ NativeWindowAdapter::~NativeWindowAdapter() {
 
 int NativeWindowAdapter::init(JNIEnv* env, void *surface) {
   if (env && surface && m_native_window == NULL) {
-    m_native_window = ANativeWindow_fromSurface(env, surface);
+    m_native_window = ANativeWindow_fromSurface(env, (jobject)surface);
   }
   return m_native_window != NULL ? 0 : -1;
 }

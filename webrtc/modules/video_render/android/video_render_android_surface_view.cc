@@ -37,7 +37,7 @@ AndroidSurfaceViewRenderer::AndroidSurfaceViewRenderer(
     _javaRenderObj(NULL),
     _javaRenderClass(NULL) {
   _javaStopCid = NULL;
-  if (getAvengineParamsSDK()->android_render_mode == 2) {
+  if (GetGlobalConfig()->android_render_mode == 2) {
     _nativeWindowManager = new NativeWindowAdapter();
   }
   else {

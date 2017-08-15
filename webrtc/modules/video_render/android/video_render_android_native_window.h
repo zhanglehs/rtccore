@@ -1,17 +1,7 @@
-﻿/*
- *  Copyright (c) 2012 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree. An additional intellectual property rights grant can be found
- *  in the file PATENTS.  All contributing project authors may
- *  be found in the AUTHORS file in the root of the source tree.
- */
-
-#ifndef WEBRTC_MODULES_VIDEO_RENDER_MAIN_SOURCE_ANDROID_VIDEO_RENDER_ANDROID_NATIVE_WINDOW_H_
+﻿#ifndef WEBRTC_MODULES_VIDEO_RENDER_MAIN_SOURCE_ANDROID_VIDEO_RENDER_ANDROID_NATIVE_WINDOW_H_
 #define WEBRTC_MODULES_VIDEO_RENDER_MAIN_SOURCE_ANDROID_VIDEO_RENDER_ANDROID_NATIVE_WINDOW_H_
 
-#include <jni>
+#include <jni.h>
 #include <android/native_window_jni.h>
 
 struct NativeWindowFrame {
@@ -25,7 +15,7 @@ struct NativeWindowFrame {
   NativeWindowFrame() {
     width = 0;
     height = 0;
-    format = 0;   // 默认为YUV数据格式
+    format = 0x32315659;   // 默认为YUV格式, 0x32315659 = SDL_FOURCC('Y', 'V', '1', '2')
     planes = 0;
     strides = NULL;
     pixels = NULL;

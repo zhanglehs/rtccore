@@ -68,7 +68,7 @@
           'conditions': [
             ['OS=="android"', {
               'include_dirs': [
-                '../../../../third_party/ffmpeg/include',
+                '../../../third_party/ffmpeg/include',
               ],
               'sources': [
                 'android/video_render_android_impl.h',
@@ -83,7 +83,7 @@
                 'android/video_render_opengles20.cc',
               ],
               'ldflags': [
-                '-L../../../../third_party/ffmpeg/android/lib',
+                '-L../../../third_party/ffmpeg/android/lib',
               ],
               'link_settings': {
                 'libraries': [
