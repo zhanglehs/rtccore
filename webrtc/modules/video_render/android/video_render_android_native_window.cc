@@ -197,7 +197,7 @@ const char *android_log_tag = "webrtc_nativewindow";
 
   static AndroidHalFourccDescriptor g_hal_fcc_map[] = {
     // YV12
-    { HAL_PIXEL_FORMAT_YV12, "HAL_YV12", HAL_PIXEL_FORMAT_YV12, android_render_on_yv12 },
+    //{ HAL_PIXEL_FORMAT_YV12, "HAL_YV12", HAL_PIXEL_FORMAT_YV12, android_render_on_yv12 },
     { SDL_FCC_YV12, "YV12", HAL_PIXEL_FORMAT_YV12, android_render_on_yv12 },
 
     // RGB565
@@ -243,6 +243,8 @@ const char *android_log_tag = "webrtc_nativewindow";
         __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: ANativeWindow_setBuffersGeometry failed, width=%d, height=%d, format=%d, retval=%d", __FUNCTION__, image_width, image_height, image_desc->hal_format, retval);
         return retval;
       }
+      window_format = ANativeWindow_getFormat(native_window);
+      window_desc = native_window_get_desc(window_format);
       if (window_desc == NULL) {
         __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: unknown window format: %d", __FUNCTION__, window_format);
         return -1;
@@ -268,7 +270,7 @@ const char *android_log_tag = "webrtc_nativewindow";
 
     int render_ret = window_desc->render(&window_buffer, frame);
     if (render_ret < 0) {
-      __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: render failed, retval=%d", __FUNCTION__, render_ret);
+      __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: render failed, window_format=%d, retval=%d", __FUNCTION__, window_format, render_ret);
       // TODO: 8 set all black
     }
 
