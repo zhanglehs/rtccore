@@ -35,6 +35,8 @@ public:
 
 private:
   ANativeWindow *m_native_window;
+  int m_window_width;
+  int m_window_height;
 };
 
 

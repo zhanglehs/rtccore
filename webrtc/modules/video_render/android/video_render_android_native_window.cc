@@ -1,4 +1,4 @@
-#include "webrtc/modules/video_render/android/video_render_android_native_window.h"
+﻿#include "webrtc/modules/video_render/android/video_render_android_native_window.h"
 
 extern "C" {
 #include "libavutil/imgutils.h"
@@ -6,6 +6,9 @@ extern "C" {
 
 #include <android/log.h>
 #include <assert.h>
+
+#include <endian.h>
+#define SDL_BYTEORDER  __BYTE_ORDER
 
 namespace {
 const char *android_log_tag = "webrtc_nativewindow";
@@ -20,9 +23,6 @@ const char *android_log_tag = "webrtc_nativewindow";
 
 #define SDL_LIL_ENDIAN  1234
 #define SDL_BIG_ENDIAN  4321
-
-#include <endian.h>
-#define SDL_BYTEORDER  __BYTE_ORDER
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #   define SDL_FOURCC(a, b, c, d) \
@@ -135,6 +135,15 @@ const char *android_log_tag = "webrtc_nativewindow";
     return -1;
   }
 
+  static void android_clear_on_yv12(ANativeWindow_Buffer *out_buffer) {
+    assert(out_buffer);
+    int dst_y_stride = out_buffer->stride;
+    int dst_c_stride = IJKALIGN(out_buffer->stride / 2, 16);
+    int dst_y_size = dst_y_stride * out_buffer->height;
+    int dst_c_size = dst_c_stride * out_buffer->height / 2;
+    memset(out_buffer->bits, 0, dst_y_size + dst_c_size * 2);
+  }
+
   static int android_render_rgb_on_rgb(ANativeWindow_Buffer *out_buffer, const NativeWindowFrame *overlay, int bpp) {
     assert(overlay->format == SDL_FCC_RV16);
     assert(overlay->planes == 1);
@@ -193,22 +202,22 @@ const char *android_log_tag = "webrtc_nativewindow";
     const char* name;
     int hal_format;
     int(*render)(ANativeWindow_Buffer *native_buffer, const NativeWindowFrame *overlay);
+    int(*clear)(ANativeWindow_Buffer *native_buffer);
   } AndroidHalFourccDescriptor;
 
   static AndroidHalFourccDescriptor g_hal_fcc_map[] = {
     // YV12
-    //{ HAL_PIXEL_FORMAT_YV12, "HAL_YV12", HAL_PIXEL_FORMAT_YV12, android_render_on_yv12 },
-    { SDL_FCC_YV12, "YV12", HAL_PIXEL_FORMAT_YV12, android_render_on_yv12 },
+    { SDL_FCC_YV12, "YV12", HAL_PIXEL_FORMAT_YV12, android_render_on_yv12, android_clear_on_yv12 },
 
     // RGB565
-    { HAL_PIXEL_FORMAT_RGB_565, "HAL_RGB_565", HAL_PIXEL_FORMAT_RGB_565, android_render_on_rgb565 },
-    { SDL_FCC_RV16, "RV16", HAL_PIXEL_FORMAT_RGB_565, android_render_on_rgb565 },
+    { HAL_PIXEL_FORMAT_RGB_565, "HAL_RGB_565", HAL_PIXEL_FORMAT_RGB_565, android_render_on_rgb565, NULL },
+    { SDL_FCC_RV16, "RV16", HAL_PIXEL_FORMAT_RGB_565, android_render_on_rgb565, NULL },
 
     // RGB8888
-    { HAL_PIXEL_FORMAT_RGBX_8888, "HAL_RGBX_8888", HAL_PIXEL_FORMAT_RGBX_8888, android_render_on_rgb8888 },
-    { HAL_PIXEL_FORMAT_RGBA_8888, "HAL_RGBA_8888", HAL_PIXEL_FORMAT_RGBA_8888, android_render_on_rgb8888 },
-    { HAL_PIXEL_FORMAT_BGRA_8888, "HAL_BGRA_8888", HAL_PIXEL_FORMAT_BGRA_8888, android_render_on_rgb8888 },
-    { SDL_FCC_RV32, "RV32", HAL_PIXEL_FORMAT_RGBX_8888, android_render_on_rgb8888 },
+    { HAL_PIXEL_FORMAT_RGBX_8888, "HAL_RGBX_8888", HAL_PIXEL_FORMAT_RGBX_8888, android_render_on_rgb8888, NULL },
+    { HAL_PIXEL_FORMAT_RGBA_8888, "HAL_RGBA_8888", HAL_PIXEL_FORMAT_RGBA_8888, android_render_on_rgb8888, NULL },
+    { HAL_PIXEL_FORMAT_BGRA_8888, "HAL_BGRA_8888", HAL_PIXEL_FORMAT_BGRA_8888, android_render_on_rgb8888, NULL },
+    { SDL_FCC_RV32, "RV32", HAL_PIXEL_FORMAT_RGBX_8888, android_render_on_rgb8888, NULL },
   };
 
   AndroidHalFourccDescriptor *native_window_get_desc(int fourcc_or_hal) {
@@ -221,72 +230,12 @@ const char *android_log_tag = "webrtc_nativewindow";
     return NULL;
   }
 
-  int SDL_Android_NativeWindow_display(ANativeWindow *native_window, const NativeWindowFrame *frame) {
-    if (!native_window || !frame || frame->width <= 0 || frame->height <= 0) {
-      return -1;
-    } 
-    
-    int image_width = IJKALIGN(frame->width, 2);
-    int image_height = IJKALIGN(frame->height, 2);
-
-    AndroidHalFourccDescriptor *image_desc = native_window_get_desc(frame->format);
-    if (image_desc == NULL) {
-      __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: unknown frame format: %u", __FUNCTION__, frame->format);
-      return -1;
-    }
-
-    int window_format = ANativeWindow_getFormat(native_window);
-    AndroidHalFourccDescriptor *window_desc = native_window_get_desc(window_format);
-    if (window_desc == NULL || window_desc->hal_format != image_desc->hal_format) {
-      int retval = ANativeWindow_setBuffersGeometry(native_window, image_width, image_height, image_desc->hal_format);
-      if (retval < 0) {
-        __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: ANativeWindow_setBuffersGeometry failed, width=%d, height=%d, format=%d, retval=%d", __FUNCTION__, image_width, image_height, image_desc->hal_format, retval);
-        return retval;
-      }
-      window_format = ANativeWindow_getFormat(native_window);
-      window_desc = native_window_get_desc(window_format);
-      if (window_desc == NULL) {
-        __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: unknown window format: %d", __FUNCTION__, window_format);
-        return -1;
-      }
-    }
-
-    ANativeWindow_Buffer window_buffer;
-    int retval = ANativeWindow_lock(native_window, &window_buffer, NULL);
-    if (retval < 0) {
-      __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: ANativeWindow_lock failed, retval=%d", __FUNCTION__, retval);
-      return retval;
-    }
-    if (window_buffer.width != image_width || window_buffer.height != image_height) {
-      __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: unexpected native window buffer (%p)(w:%d, h:%d, fmt:'%.4s'0x%x), expecting (w:%d, h:%d, fmt:'%.4s'0x%x)",
-        __FUNCTION__, native_window,
-        window_buffer.width, window_buffer.height, (char*)&window_buffer.format, window_buffer.format,
-        image_width, image_height, (char*)&frame->format, frame->format);
-      // TODO: 8 set all black
-      ANativeWindow_unlockAndPost(native_window);
-      ANativeWindow_setBuffersGeometry(native_window, image_width, image_height, image_desc->hal_format);
-      return -1;
-    }
-
-    int render_ret = window_desc->render(&window_buffer, frame);
-    if (render_ret < 0) {
-      __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: render failed, window_format=%d, retval=%d", __FUNCTION__, window_format, render_ret);
-      // TODO: 8 set all black
-    }
-
-    retval = ANativeWindow_unlockAndPost(native_window);
-    if (retval < 0) {
-      __android_log_print(ANDROID_LOG_INFO, android_log_tag, "%s: ANativeWindow_unlockAndPost failed, retval=%d", __FUNCTION__, retval);
-      return retval;
-    }
-
-    return render_ret;
-  }
-
 }
 
 NativeWindowAdapter::NativeWindowAdapter() {
   m_native_window = NULL;
+  m_window_width = 0;
+  m_window_height = 0;
 }
 
 NativeWindowAdapter::~NativeWindowAdapter() {
@@ -308,8 +257,82 @@ void NativeWindowAdapter::stop() {
 }
 
 int NativeWindowAdapter::render(const NativeWindowFrame *frame) {
-  if (m_native_window == NULL) {
+  ANativeWindow *native_window = m_native_window;
+  if (!native_window || !frame || frame->width <= 0 || frame->height <= 0) {
     return -1;
   }
-  return SDL_Android_NativeWindow_display(m_native_window, frame);
+
+  int image_width = IJKALIGN(frame->width, 2);
+  int image_height = IJKALIGN(frame->height, 2);
+
+  AndroidHalFourccDescriptor *image_desc = native_window_get_desc(frame->format);
+  if (image_desc == NULL) {
+    __android_log_print(ANDROID_LOG_INFO, android_log_tag,
+      "%s: unknown frame format: %u", __FUNCTION__, frame->format);
+    return -1;
+  }
+
+  int window_width = ANativeWindow_getWidth(native_window);    // 显示窗口的width
+  int window_height = ANativeWindow_getHeight(native_window);  // 显示窗口的height
+  int window_format = ANativeWindow_getFormat(native_window);
+  AndroidHalFourccDescriptor *window_desc = native_window_get_desc(window_format);
+  if (window_desc == NULL || window_desc->hal_format != image_desc->hal_format
+    || m_window_width != window_width || m_window_height != window_height) {
+    m_window_width = window_width;
+    m_window_height = window_height;
+    int retval = ANativeWindow_setBuffersGeometry(native_window, image_width, image_height, image_desc->hal_format);
+    if (retval < 0) {
+      __android_log_print(ANDROID_LOG_INFO, android_log_tag,
+        "%s: ANativeWindow_setBuffersGeometry failed, width=%d, height=%d, format=%d, retval=%d",
+        __FUNCTION__, image_width, image_height, image_desc->hal_format, retval);
+      return retval;
+    }
+    window_format = ANativeWindow_getFormat(native_window);
+    window_desc = native_window_get_desc(window_format);
+    if (window_desc == NULL) {
+      __android_log_print(ANDROID_LOG_INFO, android_log_tag,
+        "%s: unknown window format: %d", __FUNCTION__, window_format);
+      return -1;
+    }
+  }
+
+  // 窗口buffer：window_buffer.width、window_buffer.height与窗口的大小是两个东西
+  ANativeWindow_Buffer window_buffer;
+  int retval = ANativeWindow_lock(native_window, &window_buffer, NULL);
+  if (retval < 0) {
+    __android_log_print(ANDROID_LOG_INFO, android_log_tag,
+      "%s: ANativeWindow_lock failed, retval=%d", __FUNCTION__, retval);
+    return retval;
+  }
+  if (window_buffer.width != image_width || window_buffer.height != image_height) {
+    // 前面对窗口大小的改变已做了检测，但在ANativeWindow_lock之外的检测并不能保证是准确的
+    __android_log_print(ANDROID_LOG_INFO, android_log_tag,
+      "%s: unexpected native window buffer (%p)(w:%d, h:%d, fmt:'%.4s'0x%x), expecting (w:%d, h:%d, fmt:'%.4s'0x%x)",
+      __FUNCTION__, native_window,
+      window_buffer.width, window_buffer.height, (char*)&window_buffer.format, window_buffer.format,
+      image_width, image_height, (char*)&frame->format, frame->format);
+    if (window_desc->clear) {
+      // 将buffer置为全黑
+      window_desc->clear(&window_buffer);
+    }
+    ANativeWindow_unlockAndPost(native_window);
+    ANativeWindow_setBuffersGeometry(native_window, image_width, image_height, image_desc->hal_format);
+    return -1;
+  }
+
+  int render_ret = window_desc->render(&window_buffer, frame);
+  if (render_ret < 0) {
+    assert(false);
+    __android_log_print(ANDROID_LOG_INFO, android_log_tag,
+      "%s: render failed, window_format=%d, retval=%d", __FUNCTION__, window_format, render_ret);
+  }
+
+  retval = ANativeWindow_unlockAndPost(native_window);
+  if (retval < 0) {
+    __android_log_print(ANDROID_LOG_INFO, android_log_tag,
+      "%s: ANativeWindow_unlockAndPost failed, retval=%d", __FUNCTION__, retval);
+    return retval;
+  }
+
+  return render_ret;
 }
