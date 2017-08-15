@@ -10,50 +10,80 @@
 
 package org.webrtc.videoengine;
 
-// The following four imports are needed saveBitmapToJPEG which
-// is for debug only
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.Paint;
+import android.opengl.GLES20;
+import android.opengl.GLUtils;
 import android.util.Log;
 import android.view.Surface;
+
+import com.laifeng.rtpmediasdk.player.GlCoordUtil;
+import com.laifeng.rtpmediasdk.player.InputSurface;
+import com.laifeng.rtpmediasdk.player.GlUtil;
 
 public class ViESurfaceRenderer {
 
     private final static String TAG = "WEBRTC";
 
-    // the bitmap used for drawing.
     private Bitmap bitmap = null;
-    private ByteBuffer byteBuffer = null;
-    private Surface surface;
-    // Rect of the source bitmap to draw
-    private Rect srcRect = new Rect();
-    // Rect of the destination canvas to draw to
-    private Rect dstRect = new Rect();
-    private float dstTopScale = 0;
-    private float dstBottomScale = 1;
-    private float dstLeftScale = 0;
-    private float dstRightScale = 1;
-    private Paint paint = new Paint();
 
-    public ViESurfaceRenderer(Surface view) {
+    private InputSurface mInputSurface = null;
+    private int mProgram = -1;
+    private int maPositionHandle = -1;
+    private int maTexCoordHandle = -1;
+    private int muPosMtxHandle = -1;
+    private int muSamplerHandle = -1;
+    private int mTextureId = -1;
+    private FloatBuffer mImageVertexBuffer = null;
+    private float[] mNormalMtx = null;
+    private FloatBuffer mNormalTexCoordBuf = null;
+
+    private ByteBuffer byteBuffer = null;
+    private Surface surface = null;
+    private Rect srcRect = null;
+    private Rect dstRect = null;
+    private Paint paint = null;
+
+    private boolean mUseGL = true;
+
+    public ViESurfaceRenderer(Surface view, boolean useGL) {
         Log.d(TAG, "ViESurfaceRenderer create");
         surface = view;
-        paint.setAntiAlias(true);
-        paint.setFilterBitmap(true);
+        mUseGL = useGL;
+
+        if (mUseGL) {
+            mInputSurface = new InputSurface(surface);
+            mNormalMtx = GlCoordUtil.createIdentityMtx();
+            mNormalTexCoordBuf = GlCoordUtil.createTexCoordBuffer();
+        }
+        else {
+            srcRect = new Rect();
+            srcRect.left = 0;
+            srcRect.top = 0;
+            dstRect = new Rect();
+            dstRect.left = 0;
+            dstRect.top = 0;
+            paint = new Paint();
+            paint.setAntiAlias(true);
+            paint.setFilterBitmap(true);
+        }
     }
 
-    // surfaceChanged and surfaceCreated share this function
-    private void changeDestRect(int dstWidth, int dstHeight) {
-        dstRect.right = (int)(dstRect.left + dstRightScale * dstWidth);
-        dstRect.bottom = (int)(dstRect.top + dstBottomScale * dstHeight);
+    public void Stop() {
+        if (mInputSurface != null) {
+            mInputSurface.release();
+            mInputSurface = null;
+        }
+        if (mTextureId > 0) {
+            destroyTexture(mTextureId);
+            mTextureId = -1;
+        }
     }
 
     public Bitmap CreateBitmap(int width, int height) {
@@ -67,11 +97,10 @@ public class ViESurfaceRenderer {
             }
         }
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-        srcRect.left = 0;
-        srcRect.top = 0;
-        srcRect.bottom = height;
-        srcRect.right = width;
         return bitmap;
+    }
+
+    public void SetCoordinates(float left, float top, float right, float bottom) {
     }
 
     public ByteBuffer CreateByteBuffer(int width, int height) {
@@ -83,68 +112,149 @@ public class ViESurfaceRenderer {
         return byteBuffer;
     }
 
-    public void SetCoordinates(float left, float top,
-            float right, float bottom) {
-        Log.d(TAG, "SetCoordinates " + left + "," + top + ":" +
-                right + "," + bottom);
-        dstLeftScale = left;
-        dstTopScale = top;
-        dstRightScale = right;
-        dstBottomScale = bottom;
-    }
-
-    // It saves bitmap data to a JPEG picture, this function is for debug only.
-    private void saveBitmapToJPEG(int width, int height) {
-        ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteOutStream);
-
-        try{
-            FileOutputStream output = new FileOutputStream(String.format(
-                "/sdcard/render_%d.jpg", System.currentTimeMillis()));
-            output.write(byteOutStream.toByteArray());
-            output.flush();
-            output.close();
-        }
-        catch (FileNotFoundException e) {
-        }
-        catch (IOException e) {
-        }
-    }
-
     public void DrawByteBuffer() {
-        if (byteBuffer == null) {
+        if (byteBuffer == null || bitmap == null) {
             return;
         }
         byteBuffer.rewind();
-        bitmap.copyPixelsFromBuffer(byteBuffer);
-        DrawBitmap();
-    }
-
-    public void DrawBitmap() {
-        if (bitmap == null) {
-            return;
-        }
-        if (!surface.isValid()) {
-            return;
-        }
+        bitmap.copyPixelsFromBuffer(byteBuffer);  // GLES模式下占DrawByteBuffer()的4.9%的cpu消耗
 
         try {
-            Canvas canvas = surface.lockCanvas(null);
-            if (canvas != null) {
-                // The follow line is for debug only
-                // saveBitmapToJPEG(srcRect.right - srcRect.left,
-                //                  srcRect.bottom - srcRect.top);
-                dstRect.left = 0;
-                dstRect.top = 0;
-                dstRect.right = canvas.getWidth();
-                dstRect.bottom = canvas.getHeight();
-                canvas.drawBitmap(bitmap, srcRect, dstRect, paint);
-                surface.unlockCanvasAndPost(canvas);
+            if (mUseGL) {
+                RenderFrame_GLES(bitmap);
+            }
+            else {
+                RenderFrame_software(bitmap);
             }
         }
         catch (Exception e) {
-            // Log.d(TAG, e.getMessage());
+            Log.w(TAG, e.getMessage());
         }
+    }
+
+    private void RenderFrame_software(Bitmap bitmap) {
+        Canvas canvas = surface.lockCanvas(null);
+        if (canvas != null) {
+            srcRect.right = bitmap.getWidth();
+            srcRect.bottom = bitmap.getHeight();
+            dstRect.right = canvas.getWidth();
+            dstRect.bottom = canvas.getHeight();
+            canvas.drawBitmap(bitmap, srcRect, dstRect, paint);
+            surface.unlockCanvasAndPost(canvas);
+        }
+    }
+
+    private void RenderFrame_GLES(Bitmap bitmap) {
+        mInputSurface.makeCurrent();
+
+        initGLES();
+
+        int windowWidth = mInputSurface.getWidth();
+        int windowHeight = mInputSurface.getHeight();
+        if (windowWidth <= 0 || windowHeight <= 0) {
+            return;
+        }
+
+        GLES20.glViewport(0, 0, windowWidth, windowHeight);
+        GLES20.glClearColor(0f, 0f, 0f, 1f);
+        GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT); // 占RenderFrame_GLES的33.5%的cpu消耗
+        GLES20.glUseProgram(mProgram);
+
+        if (mTextureId < 0) {
+            mTextureId = createTexture();
+            if (mTextureId <= 0) {
+                return;
+            }
+        }
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureId);
+
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0); // 占RenderFrame_GLES的14.4%的cpu消耗
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
+                GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
+                GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
+                GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
+                GLES20.GL_CLAMP_TO_EDGE);
+
+        if (muPosMtxHandle>= 0) {
+            GLES20.glUniformMatrix4fv(muPosMtxHandle, 1, false, mNormalMtx, 0);
+        }
+
+        if (mImageVertexBuffer == null) {
+            mImageVertexBuffer = GlCoordUtil.generateImageVertexFullCoordinate(bitmap.getWidth(), bitmap.getHeight(), windowWidth, windowHeight);
+            if (mImageVertexBuffer == null) {
+                return;
+            }
+        }
+        mImageVertexBuffer.position(0);
+        GLES20.glVertexAttribPointer(maPositionHandle,
+                3, GLES20.GL_FLOAT, false, 4 * 3, mImageVertexBuffer);
+        GLES20.glEnableVertexAttribArray(maPositionHandle);
+
+        mNormalTexCoordBuf.position(0);
+        GLES20.glVertexAttribPointer(maTexCoordHandle,
+                2, GLES20.GL_FLOAT, false, 4 * 2, mNormalTexCoordBuf);
+        GLES20.glEnableVertexAttribArray(maTexCoordHandle);
+
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glEnable(GLES20.GL_BLEND);
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4); // 占RenderFrame_GLES的7.5%的cpu消耗
+        GLES20.glDisable(GLES20.GL_BLEND);
+
+        mInputSurface.swapBuffers();   // 占RenderFrame_GLES的35.2%的cpu消耗
+        mInputSurface.setPresentationTime(System.nanoTime());
+    }
+
+    private int createTexture() {
+        int[] textures = new int[1];
+        textures[0] = -1;
+        GLES20.glGenTextures(1, textures, 0);
+        return textures[0];
+    }
+
+    private void destroyTexture(int texture_id) {
+        if (texture_id > 0) {
+            int[] textures = new int[1];
+            textures[0] = texture_id;
+            GLES20.glDeleteTextures(1, textures, 0);
+        }
+    }
+
+    private void initGLES() {
+        if (mProgram >= 0) {
+            return;
+        }
+
+        GlUtil.checkGlError("initGL_S");
+
+        final String vertexShader =
+           "attribute vec4 position;\n" +
+           "attribute vec4 inputTextureCoordinate;\n" +
+           "uniform   mat4 uPosMtx;\n" +
+           "varying   vec2 textureCoordinate;\n" +
+           "void main() {\n" +
+           "  gl_Position = uPosMtx * position;\n" +
+           "  textureCoordinate   = inputTextureCoordinate.xy;\n" +
+           "}\n";
+        final String fragmentShader =
+           "precision mediump float;\n" +
+           "uniform sampler2D uSampler;\n" +
+           "varying vec2  textureCoordinate;\n" +
+           "void main() {\n" +
+           "  gl_FragColor = texture2D(uSampler, textureCoordinate);\n" +
+           "}\n";
+        mProgram = GlUtil.createProgram(vertexShader, fragmentShader);
+
+        // 缓存上面opengl代码的部分变量
+        maPositionHandle = GLES20.glGetAttribLocation(mProgram, "position");
+        maTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "inputTextureCoordinate");
+        muPosMtxHandle = GLES20.glGetUniformLocation(mProgram, "uPosMtx");
+        muSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uSampler");
+
+        GlUtil.checkGlError("initGL_E");
     }
 
 }
