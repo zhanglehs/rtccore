@@ -67,19 +67,29 @@
            # automatically.
           'conditions': [
             ['OS=="android"', {
+              'include_dirs': [
+                '../../../../third_party/ffmpeg/include',
+              ],
               'sources': [
                 'android/video_render_android_impl.h',
                 'android/video_render_android_native_opengl2.h',
+				'android/video_render_android_native_window.h',
                 'android/video_render_android_surface_view.h',
                 'android/video_render_opengles20.h',
                 'android/video_render_android_impl.cc',
                 'android/video_render_android_native_opengl2.cc',
+				'android/video_render_android_native_window.cc',
                 'android/video_render_android_surface_view.cc',
                 'android/video_render_opengles20.cc',
+              ],
+              'ldflags': [
+                '-L../../../../third_party/ffmpeg/android/lib',
               ],
               'link_settings': {
                 'libraries': [
                   '-lGLESv2',
+                  '-landroid',
+                  '-lavutil',
                 ],
               },
             }],

@@ -24,6 +24,7 @@
 #endif
 
 #include "webrtc/avengine/source/avengine_util.h"
+#include "webrtc/modules/video_render/android/video_render_android_native_window.h"
 
 namespace webrtc {
 
@@ -36,11 +37,22 @@ AndroidSurfaceViewRenderer::AndroidSurfaceViewRenderer(
     _javaRenderObj(NULL),
     _javaRenderClass(NULL) {
   _javaStopCid = NULL;
+  if (getAvengineParamsSDK()->android_render_mode == 2) {
+    _nativeWindowManager = new NativeWindowAdapter();
+  }
+  else {
+    _nativeWindowManager = NULL;
+  }
 }
 
 AndroidSurfaceViewRenderer::~AndroidSurfaceViewRenderer() {
   WEBRTC_TRACE(kTraceInfo, kTraceVideoRenderer, _id,
                "AndroidSurfaceViewRenderer dtor");
+  if (_nativeWindowManager) {
+    delete _nativeWindowManager;
+    return;
+  }
+
   if(g_jvm) {
     // get the JNI env for this thread
     bool isAttached = false;
@@ -123,6 +135,21 @@ int32_t AndroidSurfaceViewRenderer::Init() {
       return -1;
     }
     isAttached = true;
+  }
+
+  if (_nativeWindowManager) {
+    int ret = _nativeWindowManager->init(env, _ptrWindow);
+
+    // Detach this thread if it was attached
+    if (isAttached) {
+      if (g_jvm->DetachCurrentThread() < 0) {
+        WEBRTC_TRACE(kTraceWarning,
+          kTraceVideoRenderer,
+          _id,
+          "%s: Could not detach thread from JVM", __FUNCTION__);
+      }
+    }
+    return ret;
   }
 
   // get the ViESurfaceRender class
@@ -225,7 +252,7 @@ AndroidSurfaceViewRenderer::CreateAndroidRenderChannel(
                __FUNCTION__,
                streamId);
   AndroidSurfaceViewChannel* stream =
-      new AndroidSurfaceViewChannel(streamId, g_jvm, renderer, _javaRenderObj);
+      new AndroidSurfaceViewChannel(streamId, g_jvm, renderer, _javaRenderObj, _nativeWindowManager);
   if(stream && stream->Init(zOrder, left, top, right, bottom) == 0)
     return stream;
   else
@@ -237,7 +264,8 @@ AndroidSurfaceViewChannel::AndroidSurfaceViewChannel(
     uint32_t streamId,
     JavaVM* jvm,
     VideoRenderAndroid& renderer,
-    jobject javaRenderObj) :
+    jobject javaRenderObj,
+    NativeWindowAdapter *nativeWindowManager) :
     _id(streamId),
     _renderCritSect(*CriticalSectionWrapper::CreateCriticalSection()),
     _renderer(renderer),
@@ -251,6 +279,7 @@ AndroidSurfaceViewChannel::AndroidSurfaceViewChannel(
     _bitmapHeight(0),
     _userdata(NULL),
     _first_frame(true) {
+  _nativeWindowManager = nativeWindowManager;
 }
 
 AndroidSurfaceViewChannel::~AndroidSurfaceViewChannel() {
@@ -259,6 +288,10 @@ AndroidSurfaceViewChannel::~AndroidSurfaceViewChannel() {
                _id,
                "AndroidSurfaceViewChannel dtor");
   delete &_renderCritSect;
+  if (_nativeWindowManager) {
+    delete _nativeWindowManager;
+    return;
+  }
   if(_jvm) {
     // get the JNI env for this thread
     bool isAttached = false;
@@ -303,7 +336,9 @@ int32_t AndroidSurfaceViewChannel::Init(
     const float top,
     const float right,
     const float bottom) {
-
+  if (_nativeWindowManager) {
+    return 0;
+  }
   WEBRTC_TRACE(kTraceDebug,
                kTraceVideoRenderer,
                _id,
@@ -440,6 +475,33 @@ int32_t AndroidSurfaceViewChannel::RenderFrame(
  */
 void AndroidSurfaceViewChannel::DeliverFrame(JNIEnv* jniEnv) {
   _renderCritSect.Enter();
+
+  if (_nativeWindowManager) {
+    NativeWindowFrame frame;
+    frame.width = _bufferToRender.width();
+    frame.height = _bufferToRender.height();
+    frame.planes = 3;
+    unsigned short strides[3];
+    unsigned char *pixels[3];
+    frame.strides = strides;
+    frame.pixels = pixels;
+    frame.strides[0] = (unsigned short)_bufferToRender.stride(kYPlane);
+    frame.strides[1] = (unsigned short)_bufferToRender.stride(kVPlane);
+    frame.strides[2] = (unsigned short)_bufferToRender.stride(kUPlane);
+    frame.pixels[0] = _bufferToRender.buffer(kYPlane);
+    frame.pixels[1] = _bufferToRender.buffer(kVPlane);
+    frame.pixels[2] = _bufferToRender.buffer(kUPlane);
+    _nativeWindowManager->render(&frame);
+    _renderCritSect.Leave();
+
+    if (_first_frame && frame.width > 0 && frame.height > 0) {
+      _first_frame = false;
+      if (_userdata) {
+        ExportNotifyMessage(_userdata, LFRTC_VIDEO_FIRST_FRAME, 0, 0);
+      }
+    }
+    return;
+  }
 
   if (_bitmapWidth != _bufferToRender.width() ||
       _bitmapHeight != _bufferToRender.height()) {

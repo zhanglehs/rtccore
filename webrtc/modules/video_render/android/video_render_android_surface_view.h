@@ -16,6 +16,8 @@
 #include "webrtc/modules/video_render/android/video_render_android_impl.h"
 #include "webrtc/modules/video_render/include/video_render_defines.h"
 
+class NativeWindowAdapter;
+
 namespace webrtc {
 
 class CriticalSectionWrapper;
@@ -25,7 +27,8 @@ class AndroidSurfaceViewChannel : public AndroidStream {
   AndroidSurfaceViewChannel(uint32_t streamId,
                             JavaVM* jvm,
                             VideoRenderAndroid& renderer,
-                            jobject javaRenderObj);
+                            jobject javaRenderObj,
+                            NativeWindowAdapter *nativeWindowManager);
   ~AndroidSurfaceViewChannel();
 
   int32_t Init(int32_t zOrder, const float left, const float top,
@@ -59,6 +62,8 @@ class AndroidSurfaceViewChannel : public AndroidStream {
   int _bitmapHeight;
   void *_userdata;
   bool _first_frame;
+
+  NativeWindowAdapter *_nativeWindowManager;
 };
 
 class AndroidSurfaceViewRenderer : private VideoRenderAndroid {
@@ -81,6 +86,7 @@ class AndroidSurfaceViewRenderer : private VideoRenderAndroid {
   jobject _javaRenderObj;
   jclass _javaRenderClass;
   jmethodID _javaStopCid;
+  NativeWindowAdapter *_nativeWindowManager;
 };
 
 }  // namespace webrtc
