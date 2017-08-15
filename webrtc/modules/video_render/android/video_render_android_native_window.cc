@@ -202,7 +202,7 @@ const char *android_log_tag = "webrtc_nativewindow";
     const char* name;
     int hal_format;
     int(*render)(ANativeWindow_Buffer *native_buffer, const NativeWindowFrame *overlay);
-    int(*clear)(ANativeWindow_Buffer *native_buffer);
+    void(*clear)(ANativeWindow_Buffer *native_buffer);
   } AndroidHalFourccDescriptor;
 
   static AndroidHalFourccDescriptor g_hal_fcc_map[] = {
