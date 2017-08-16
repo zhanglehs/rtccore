@@ -16,7 +16,7 @@
 #include "webrtc/system_wrappers/interface/trace.h"
 #include "webrtc/modules/video_render/ios/video_render_ios_impl.h"
 
-#include "webrtc/avengine/interface/ios_video_render_api.h"
+#include "webrtc/avengine/interface/avengine_api.h"
 
 using namespace webrtc;
 
@@ -27,6 +27,7 @@ using namespace webrtc;
   int _frameBufferHeight;
   unsigned int _defaultFrameBuffer;
   unsigned int _colorRenderBuffer;
+  bool _pause_render;
 }
 
 @synthesize context = context_;
@@ -39,7 +40,7 @@ using namespace webrtc;
   // init super class
   self = [super initWithCoder:coder];
   if (self) {
-    _gles_renderer20.reset(new OpenGles20());
+    [self myinit];
   }
   return self;
 }
@@ -48,7 +49,7 @@ using namespace webrtc;
   // init super class
   self = [super init];
   if (self) {
-    _gles_renderer20.reset(new OpenGles20());
+    [self myinit];
   }
   return self;
 }
@@ -57,9 +58,25 @@ using namespace webrtc;
   // init super class
   self = [super initWithFrame:frame];
   if (self) {
-    _gles_renderer20.reset(new OpenGles20());
+    [self myinit];
   }
   return self;
+}
+
+- (void)myinit {
+  if (!_gles_renderer20) {
+    _gles_renderer20.reset(new OpenGles20());
+    _pause_render = false;
+    UIApplicationState state = [UIApplication sharedApplication].applicationState;
+    if(UIApplicationStateActive != state) {
+      _pause_render = true;
+    }
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillEnterForeground) name:UIApplicationWillEnterForegroundNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive) name:UIApplicationDidBecomeActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillResignActive) name:UIApplicationWillResignActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground) name:UIApplicationDidEnterBackgroundNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate) name:UIApplicationWillTerminateNotification object:nil];
+  }
 }
 
 - (void)dealloc {
@@ -74,6 +91,8 @@ using namespace webrtc;
   }
 
   [EAGLContext setCurrentContext:nil];
+
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (NSString*)description {
@@ -83,6 +102,9 @@ using namespace webrtc;
 }
 
 - (BOOL)createContext {
+  if (_context) {
+    return YES;
+  }
   // create OpenGLES context from self layer class
   CAEAGLLayer* eagl_layer = (CAEAGLLayer*)self.layer;
   eagl_layer.opaque = YES;
@@ -133,6 +155,9 @@ using namespace webrtc;
 }
 
 - (BOOL)presentFramebuffer {
+    if (_pause_render) {
+        return NO;
+    }
   if (![_context presentRenderbuffer:GL_RENDERBUFFER]) {
     WEBRTC_TRACE(kTraceWarning,
                  kTraceVideoRenderer,
@@ -146,6 +171,9 @@ using namespace webrtc;
 }
 
 - (BOOL)renderFrame:(I420VideoFrame*)frameToRender {
+  if (_pause_render) {
+    return NO;
+  }
   if (![EAGLContext setCurrentContext:_context]) {
     return NO;
   }
@@ -161,82 +189,29 @@ using namespace webrtc;
   return _gles_renderer20->SetCoordinates(zOrder, left, top, right, bottom);
 }
 
+- (void)applicationWillEnterForeground {
+}
+
+- (void)applicationDidBecomeActive {
+  _pause_render = false;
+}
+
+- (void)applicationWillResignActive {
+  _pause_render = true;
+}
+
+- (void)applicationDidEnterBackground {
+}
+
+- (void)applicationWillTerminate {
+}
+
 @end
 
-UIView *lfrtcCreateIosRenderView(CGRect frame) {
-  VideoRenderIosView *renderView = [[VideoRenderIosView alloc] initWithFrame:frame];
+UIView *lfrtcCreateIosRenderView() {
+  VideoRenderIosView *renderView = [[VideoRenderIosView alloc] init];
+  // 如果去掉该行，则画面是上下颠倒的，估计是opengl渲染时参数有误。
+  // 这里将画面上下反转过来。其实应修改opengl渲染参数的，或许还能提高效率
+  renderView.transform = CGAffineTransformScale(renderView.transform, 1.0f, -1.0f);
   return renderView;
 }
-
-void *lfrtcCreateIosVideoRender(int idx, CGRect frame0, float scale0, UIView *view, void **rendHnd) {
-  int orgx = frame0.origin.x * scale0;
-  int orgy = frame0.origin.y * scale0;
-  int width = frame0.size.width * scale0;
-  int height = frame0.size.height * scale0;
-  CGRect frame = CGRectMake(orgx, orgy, width, height);
-  VideoRenderIosView *renderView = [[VideoRenderIosView alloc] initWithFrame:frame];
-  IVideoRender* _ptrRenderer = NULL;
-
-  webrtc::VideoRenderIosImpl* ptrRenderer = new webrtc::VideoRenderIosImpl(idx, (__bridge void *)renderView, NO);
-  if (ptrRenderer) {
-    _ptrRenderer = reinterpret_cast<IVideoRender*>(ptrRenderer);
-    if (_ptrRenderer->Init() != -1) {
-    } else {
-      int ret = -1;
-      NSLog(@"CREATE_VIDEO_RENDER_OBJ: %d ",ret);
-      return (__bridge void *)renderView;
-      return nil;
-    }
-  }
-
-  float scale = 1.0 / scale0;
-  float offsetx = frame0.size.width * scale;
-  float offsety = frame0.size.height * scale;
-  if (view == NULL) {
-    offsetx = frame0.size.width;
-    offsety = frame0.size.height;
-    ((UIView *)renderView).transform = CGAffineTransformScale(((UIView *)renderView).transform, 1.0 * scale, -1.0 * scale);
-    ((UIView *)renderView).transform = CGAffineTransformTranslate(((UIView *)renderView).transform, -offsetx, offsety);
-  }
-  else {
-    view.transform = CGAffineTransformScale(view.transform, 1.0 * scale, -1.0 * scale);
-    view.transform = CGAffineTransformTranslate(view.transform, -offsetx, -offsety);
-  }
-
-  if (rendHnd) {
-    *rendHnd = _ptrRenderer;
-  }
-  return (__bridge void *)renderView;
-}
-
-void lfrtcDestroyIosVideoRender(void *rendHnd) {
-  if (rendHnd) {
-    IVideoRender *ptrRenderer = reinterpret_cast<IVideoRender*>(rendHnd);
-    delete ptrRenderer;
-  }
-}
-
-/*void CREATE_VIDEO_RENDER_PAUSE(void *hnd, bool flag) {
-  webrtc::VideoRenderIosImpl* ptrRenderer = reinterpret_cast<webrtc::VideoRenderIosImpl*>(hnd);
-  if(ptrRenderer) {
-    printf("CREATE_VIDEO_RENDER_PAUSE:%d\n",flag);
-    ptrRenderer->PauseRender(flag);
-  }
-}*/
-
-/*void *CREATE_VIDEO_RENDER_OBJ(CGRect frame) {
-  VideoRenderIosView *renderView = [[VideoRenderIosView alloc] initWithFrame:frame];
-  return (__bridge void *)renderView;
-}
-
-int CREATE_VIDEO_RENDER_INIT(void *hnd) {
-  VideoRenderIosView *renderView = (__bridge VideoRenderIosView *)hnd;
-  webrtc::VideoRenderIosImpl* ptrRenderer = new webrtc::VideoRenderIosImpl(0, (__bridge void *)renderView, NO);
-  if (ptrRenderer->Init() != -1) {
-  } else {
-    return 1;
-  }
-  return 0;
-}
-
-*/
