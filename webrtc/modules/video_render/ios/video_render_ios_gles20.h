@@ -53,7 +53,6 @@ class VideoRenderIosGles20 {
   int ChangeWindow(void* new_window);
   int StartRender();
   int StopRender();
-  void PauseRender(bool flag);
 
  protected:
   static bool ScreenUpdateThreadProc(void* obj);
@@ -81,7 +80,6 @@ class VideoRenderIosGles20 {
   std::multimap<int, int> z_order_to_channel_;
   EAGLContext* gles_context_;
   bool is_rendering_;
-    bool pause_rendering_;
 };
 }  // namespace webrtc
 

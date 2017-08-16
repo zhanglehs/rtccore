@@ -35,7 +35,6 @@ VideoRenderIosGles20::VideoRenderIosGles20(VideoRenderIosView* view,
       z_order_to_channel_(),
       gles_context_([view context]),
       is_rendering_(true) {
-      pause_rendering_ = false;
   screen_update_thread_ = ThreadWrapper::CreateThread(
       ScreenUpdateThreadProc, this, "ScreenUpdateGles20");
   screen_update_event_ = EventTimerWrapper::Create();
@@ -171,10 +170,6 @@ bool VideoRenderIosGles20::ScreenUpdateProcess() {
 
   CriticalSectionScoped cs(gles_crit_sec_.get());
 
-  if(pause_rendering_) {
-    return true;
-  }
-
   if (!is_rendering_) {
     return false;
   }
@@ -230,7 +225,7 @@ bool VideoRenderIosGles20::ScreenUpdateProcess() {
 
     [view_ presentFramebuffer];
 
-	for (auto it = first_channels.begin(); it != first_channels.end(); it++) {
+    for (auto it = first_channels.begin(); it != first_channels.end(); it++) {
       VideoRenderIosChannel* channel = *it;
       if (channel->GetUserdata()) {
         ExportNotifyMessage(channel->GetUserdata(), LFRTC_VIDEO_FIRST_FRAME, 0, 0);
@@ -273,11 +268,6 @@ int VideoRenderIosGles20::StartRender() {
 int VideoRenderIosGles20::StopRender() {
   is_rendering_ = false;
   return 0;
-}
-
-void VideoRenderIosGles20::PauseRender(bool flag) {
-    CriticalSectionScoped cs(gles_crit_sec_.get());
-    pause_rendering_ = flag;
 }
 
 int VideoRenderIosGles20::GetScreenResolution(uint& screen_width,

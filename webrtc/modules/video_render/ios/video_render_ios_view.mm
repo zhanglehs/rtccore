@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (c) 2013 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
@@ -14,7 +14,6 @@
 
 #include "webrtc/modules/video_render/ios/video_render_ios_view.h"
 #include "webrtc/system_wrappers/interface/trace.h"
-#include "webrtc/modules/video_render/ios/video_render_ios_impl.h"
 
 #include "webrtc/avengine/interface/avengine_api.h"
 

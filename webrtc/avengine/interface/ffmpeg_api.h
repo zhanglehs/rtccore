@@ -1,4 +1,4 @@
-//edited by zhangle
+ï»¿//edited by zhangle
 #ifndef AVENGINE_SOURCE_FFMPEG_API_H_
 #define AVENGINE_SOURCE_FFMPEG_API_H_
 
@@ -13,46 +13,46 @@ extern "C" {
 #endif
 
 struct lfrtcAudioEncodeParams {
-  // ÒÔÏÂÈı¸öÊÇ±àÂëÆ÷ÊäÈëPCMÊı¾İµÄ²ÎÊı
-  // int sample_fmt; // Ö»½ÓÊÜAV_SAMPLE_FMT_S16¸ñÊ½
-  int channel_count; // µÈÓÚ1ºÍ2Ê±£¬±íÊ¾AV_CH_LAYOUT_MONO/AV_CH_LAYOUT_STEREO¸ñÊ½
+  // ä»¥ä¸‹ä¸‰ä¸ªæ˜¯ç¼–ç å™¨è¾“å…¥PCMæ•°æ®çš„å‚æ•°
+  // int sample_fmt; // åªæ¥å—AV_SAMPLE_FMT_S16æ ¼å¼
+  int channel_count; // ç­‰äº1å’Œ2æ—¶ï¼Œè¡¨ç¤ºAV_CH_LAYOUT_MONO/AV_CH_LAYOUT_STEREOæ ¼å¼
   int sample_rate;
 
-  // ÒÔÏÂ²ÎÊıÊÇ¶Ô±àÂëÆ÷µÄÉèÖÃ
+  // ä»¥ä¸‹å‚æ•°æ˜¯å¯¹ç¼–ç å™¨çš„è®¾ç½®
   int bitrate;
-  int codec_id;  // ²Î¼ûffmpegµÄenum AVCodecID¡£ µÈÓÚ0Ê±³ÌĞò»áÄ¬ÈÏÒÔAAC±àÂë
+  int codec_id;  // å‚è§ffmpegçš„enum AVCodecIDã€‚ ç­‰äº0æ—¶ç¨‹åºä¼šé»˜è®¤ä»¥AACç¼–ç 
 };
 
 struct lfrtcAudioDecodeParams {
-  // ÒÔÏÂÈı¸ö²ÎÊıÊÇÒµÎñ·½ÆÚÍûµÃµ½µÄPCMÊı¾İ¸ñÊ½£¬Èç¹û½âÂëÆ÷µÄÊä³ö¸ñÊ½²»·ûºÏÖ®£¬½«»á½øĞĞresampleºóÔÙÊä³ö
-  // int sample_fmt; // Ö»½ÓÊÜAV_SAMPLE_FMT_S16¸ñÊ½
-  int channel_count; // µÈÓÚ1ºÍ2Ê±£¬±íÊ¾AV_CH_LAYOUT_MONO/AV_CH_LAYOUT_STEREO¸ñÊ½
+  // ä»¥ä¸‹ä¸‰ä¸ªå‚æ•°æ˜¯ä¸šåŠ¡æ–¹æœŸæœ›å¾—åˆ°çš„PCMæ•°æ®æ ¼å¼ï¼Œå¦‚æœè§£ç å™¨çš„è¾“å‡ºæ ¼å¼ä¸ç¬¦åˆä¹‹ï¼Œå°†ä¼šè¿›è¡Œresampleåå†è¾“å‡º
+  // int sample_fmt; // åªæ¥å—AV_SAMPLE_FMT_S16æ ¼å¼
+  int channel_count; // ç­‰äº1å’Œ2æ—¶ï¼Œè¡¨ç¤ºAV_CH_LAYOUT_MONO/AV_CH_LAYOUT_STEREOæ ¼å¼
   int sample_rate;
 
-  int codec_id;  // ²Î¼ûffmpegµÄenum AVCodecID¡£ µÈÓÚ0Ê±³ÌĞò»áÄ¬ÈÏÒÔAAC½âÂë
+  int codec_id;  // å‚è§ffmpegçš„enum AVCodecIDã€‚ ç­‰äº0æ—¶ç¨‹åºä¼šé»˜è®¤ä»¥AACè§£ç 
 };
 
 struct lfrtcVideoEncodeParams {
-  // ÒÔÏÂËÄ¸öÊÇ±àÂëÆ÷ÊäÈëÔ­Ê¼Êı¾İµÄ²ÎÊı
-  // int data_format; // Ö»½ÓÊÕAV_PIX_FMT_YUV420P¸ñÊ½
+  // ä»¥ä¸‹å››ä¸ªæ˜¯ç¼–ç å™¨è¾“å…¥åŸå§‹æ•°æ®çš„å‚æ•°
+  // int data_format; // åªæ¥æ”¶AV_PIX_FMT_YUV420Pæ ¼å¼
   int width;
   int height;
   int fps;
 
   int bitrate;
   int gop_size;
-  int codec_id;  // ²Î¼ûffmpegµÄenum AVCodecID¡£ µÈÓÚ0Ê±³ÌĞò»áÄ¬ÈÏÒÔH264±àÂë
+  int codec_id;  // å‚è§ffmpegçš„enum AVCodecIDã€‚ ç­‰äº0æ—¶ç¨‹åºä¼šé»˜è®¤ä»¥H264ç¼–ç 
   char preset[32];
 };
 
 struct lfrtcVideoDecodeParams {
-  // int data_format; // Ö»½ÓÊÕAV_PIX_FMT_YUV420P¸ñÊ½
+  // int data_format; // åªæ¥æ”¶AV_PIX_FMT_YUV420Pæ ¼å¼
 
-  int codec_id;  // ²Î¼ûffmpegµÄenum AVCodecID¡£ µÈÓÚ0Ê±³ÌĞò»áÄ¬ÈÏÒÔH264½âÂë
+  int codec_id;  // å‚è§ffmpegçš„enum AVCodecIDã€‚ ç­‰äº0æ—¶ç¨‹åºä¼šé»˜è®¤ä»¥H264è§£ç 
 };
 
 #if 0
-// nb_sample£¬±àÂëÆ÷Ö§³ÖµÄÖ¡´óĞ¡
+// nb_sampleï¼Œç¼–ç å™¨æ”¯æŒçš„å¸§å¤§å°
 FFAVCODEC_API void *lfrtcCreateAudioEncoder(const lfrtcAudioEncodeParams *params, int *nb_sample);
 FFAVCODEC_API void *lfrtcCreateAudioDecoder(const lfrtcAudioDecodeParams *params);
 FFAVCODEC_API void *lfrtcCreateVideoEncoder(const lfrtcVideoEncodeParams *params);
@@ -60,11 +60,11 @@ FFAVCODEC_API void *lfrtcCreateVideoDecoder(const lfrtcVideoDecodeParams *params
 
 FFAVCODEC_API void lfrtcFFDeleteCodec(void *codecCtx);
 
-// inBuf, inlen, outBuf, outLen: ½Óplane´«µİ£¬Èç¹ûÖ»ÓĞÒ»¸öplane£¬ÔòÖ»Ê¹ÓÃÊı×éµÄµÚ1¸öÔªËØ£¬Êı×éµÄÆäËüÖµÎª0
-// outLen: ÎªÊäÈëÊä³ö²ÎÊı¡£ÊäÈëÊ±±íÊ¾bufµÄÈİÁ¿£¬Êä³öÊ±±íÊ¾Êµ¼ÊÊı¾İµÄ³¤¶È
-// keyframe: ÎªÊäÈëÊä³ö²ÎÊı¡£ÊäÈëÊ±keyframe = true±íÊ¾Ç¿ÖÆIDRÖ¡±àÂë£¬Êä³öÊ±±íÊ¾µ±Ç°µÄÊµ¼ÊÀàĞÍ
-// frameType: ÎªÊä³ö²ÎÊı¡£Êµ¼ÊÉÏÓ¦Îªenum AVPictureTypeÀàĞÍ£¨ffmpegµÄlibavutil/frame.hÖĞ¶¨Òå£©
-// ·µ»ØÖµ£º>= 0Îª³É¹¦£¬ÆäËüÎªÊ§°Ü¡£
+// inBuf, inlen, outBuf, outLen: æ¥planeä¼ é€’ï¼Œå¦‚æœåªæœ‰ä¸€ä¸ªplaneï¼Œåˆ™åªä½¿ç”¨æ•°ç»„çš„ç¬¬1ä¸ªå…ƒç´ ï¼Œæ•°ç»„çš„å…¶å®ƒå€¼ä¸º0
+// outLen: ä¸ºè¾“å…¥è¾“å‡ºå‚æ•°ã€‚è¾“å…¥æ—¶è¡¨ç¤ºbufçš„å®¹é‡ï¼Œè¾“å‡ºæ—¶è¡¨ç¤ºå®é™…æ•°æ®çš„é•¿åº¦
+// keyframe: ä¸ºè¾“å…¥è¾“å‡ºå‚æ•°ã€‚è¾“å…¥æ—¶keyframe = trueè¡¨ç¤ºå¼ºåˆ¶IDRå¸§ç¼–ç ï¼Œè¾“å‡ºæ—¶è¡¨ç¤ºå½“å‰çš„å®é™…ç±»å‹
+// frameType: ä¸ºè¾“å‡ºå‚æ•°ã€‚å®é™…ä¸Šåº”ä¸ºenum AVPictureTypeç±»å‹ï¼ˆffmpegçš„libavutil/frame.hä¸­å®šä¹‰ï¼‰
+// è¿”å›å€¼ï¼š>= 0ä¸ºæˆåŠŸï¼Œå…¶å®ƒä¸ºå¤±è´¥ã€‚
 FFAVCODEC_API int lfrtcEncodeVideo(void *codecCtx, char *inBuf[3], int inLinesize[3], char *outBuf[3], int *outLen[3], bool *keyframe);
 FFAVCODEC_API int lfrtcDecodeVideo(void *codecCtx, char *inBuf[3], int inLen[3], char *outBuf[3], int outLen[3], int *frameType);
 FFAVCODEC_API int lfrtcEncodeAudio(void *codecCtx, char *inBuf[3], int inLen[3], char *outBuf[3], int *outLen[3]);
@@ -121,20 +121,20 @@ private:
 };
 
 class lfRtcVideoDecoderInternal;
-// 1. Ô¼¶¨
-//    ½âÂëÆ÷Ä¬ÈÏ½âÂëH264µÄÊı¾İ£¬½âÂëºóÊä³öÊı¾İ¹Ì¶¨ÎªAV_PIX_FMT_YUV420P
-// 2. ÒÀÀµ²ÎÊı
-//    ÎŞĞè´«ÈëÆäËü²ÎÊı£¬¼´¿ÉÈÃ½âÂëÆ÷¿ªÊ¼¹¤×÷
-// 3. ·µ»Ø½âÂëºóÊı¾İ
-//    ÎªÁË·ÀÖ¹½âÂëºóµÄÊı¾İ±»¶îÍâ¿½±´£¬½âÂëºóÊı¾İµÄbufÓÉµ÷ÓÃÕßÎ¬»¤(¼´Process()ÖĞ´«ÈëµÄoutBuf£©
-//    ½âÂë³É¹¦ºó£¬»á°´ÕÕAV_PIX_FMT_YUV420P¸ñÊ½£¨linesize=width£©½«Êı¾İĞ´µ½outBuf¡£
-//    ËùÒÔ´«ÈëµÄwidthºÍheight£¬¾Í±êÊ¶ÁËoutBufµÄ´óĞ¡¡£
-// 4. widthºÍheight
-//    ½âÂëÆ÷ÖªµÀ·Ö±æÂÊÊÇ¶àÉÙ£¬¶øµ÷ÓÃÕß²¢²»ÖªµÀ£¬ËùÒÔ±¾ÀàÌá¹©ÁË·Ö±æÂÊµÄ»ñÈ¡½Ó¿Ú£¬
-//    Process()ÖĞ´«ÈëµÄwidthºÍheight£¬±êÊ¶ÁËoutBufµÄ´óĞ¡£¬µ«ÓĞ¿ÉÄÜÓëÊµ¼ÊÇé¿ö²»·û¡£
-//    ÀıÈç·Ö±æÂÊ±ä»¯£¬´ËÊ±Process()<0£¬µ«ÆäÄÚ²¿ÈÔÈ»»á½âÂë£¬²¢°Ñ½âÂëºóµÄÊı¾İ·Åµ½ÄÚ²¿bufÖĞ£¬
-//    Òò´Ëµ±Process()=VIDEO_DECODE_SUCCESS_ON_SIZEÊ±£¬µ÷ÓÃÕßÓ¦¸üĞÂwidth¡¢heightºÍoutBuf
-//    ²¢´ÓGetExtraDecodeData()»ñÈ¡Êı¾İ
+// 1. çº¦å®š
+//    è§£ç å™¨é»˜è®¤è§£ç H264çš„æ•°æ®ï¼Œè§£ç åè¾“å‡ºæ•°æ®å›ºå®šä¸ºAV_PIX_FMT_YUV420P
+// 2. ä¾èµ–å‚æ•°
+//    æ— éœ€ä¼ å…¥å…¶å®ƒå‚æ•°ï¼Œå³å¯è®©è§£ç å™¨å¼€å§‹å·¥ä½œ
+// 3. è¿”å›è§£ç åæ•°æ®
+//    ä¸ºäº†é˜²æ­¢è§£ç åçš„æ•°æ®è¢«é¢å¤–æ‹·è´ï¼Œè§£ç åæ•°æ®çš„bufç”±è°ƒç”¨è€…ç»´æŠ¤(å³Process()ä¸­ä¼ å…¥çš„outBufï¼‰
+//    è§£ç æˆåŠŸåï¼Œä¼šæŒ‰ç…§AV_PIX_FMT_YUV420Pæ ¼å¼ï¼ˆlinesize=widthï¼‰å°†æ•°æ®å†™åˆ°outBufã€‚
+//    æ‰€ä»¥ä¼ å…¥çš„widthå’Œheightï¼Œå°±æ ‡è¯†äº†outBufçš„å¤§å°ã€‚
+// 4. widthå’Œheight
+//    è§£ç å™¨çŸ¥é“åˆ†è¾¨ç‡æ˜¯å¤šå°‘ï¼Œè€Œè°ƒç”¨è€…å¹¶ä¸çŸ¥é“ï¼Œæ‰€ä»¥æœ¬ç±»æä¾›äº†åˆ†è¾¨ç‡çš„è·å–æ¥å£ï¼Œ
+//    Process()ä¸­ä¼ å…¥çš„widthå’Œheightï¼Œæ ‡è¯†äº†outBufçš„å¤§å°ï¼Œä½†æœ‰å¯èƒ½ä¸å®é™…æƒ…å†µä¸ç¬¦ã€‚
+//    ä¾‹å¦‚åˆ†è¾¨ç‡å˜åŒ–ï¼Œæ­¤æ—¶Process()<0ï¼Œä½†å…¶å†…éƒ¨ä»ç„¶ä¼šè§£ç ï¼Œå¹¶æŠŠè§£ç åçš„æ•°æ®æ”¾åˆ°å†…éƒ¨bufä¸­ï¼Œ
+//    å› æ­¤å½“Process()=VIDEO_DECODE_SUCCESS_ON_SIZEæ—¶ï¼Œè°ƒç”¨è€…åº”æ›´æ–°widthã€heightå’ŒoutBuf
+//    å¹¶ä»GetExtraDecodeData()è·å–æ•°æ®
 class lfRtcVideoDecoder {
 public:
   lfRtcVideoDecoder();
@@ -148,7 +148,7 @@ public:
     VIDEO_DECODE_SUCCESS_NO_PICTRUE,
     VIDEO_DECODE_SUCCESS_ON_SIZE,
   };
-  // ·µ»ØÖµ£¬<0±íÊ¾½âÂëÊ§°Ü£»>=0±íÊ¾½âÂë³É¹¦£»=0±íÊ¾½âÂë³É¹¦£¬ÇÒoutBuf±»Ğ´ÈëÁËÊı¾İ
+  // è¿”å›å€¼ï¼Œ<0è¡¨ç¤ºè§£ç å¤±è´¥ï¼›>=0è¡¨ç¤ºè§£ç æˆåŠŸï¼›=0è¡¨ç¤ºè§£ç æˆåŠŸï¼Œä¸”outBufè¢«å†™å…¥äº†æ•°æ®
   int Process(unsigned char *inBuf, int inLen, unsigned char *outBuf[3], int width, int height);
   int GetWidth();
   int GetHeight();

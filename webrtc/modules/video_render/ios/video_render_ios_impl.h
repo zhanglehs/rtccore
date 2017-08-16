@@ -51,7 +51,7 @@ class VideoRenderIosImpl : IVideoRender {
 
   int32_t StartRender() override;
   int32_t StopRender() override;
-  void PauseRender(bool flag);
+
   VideoRenderType RenderType() override;
   RawVideoType PerferedVideoType() override;
   bool FullScreen() override;

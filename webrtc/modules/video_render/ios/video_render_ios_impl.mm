@@ -101,10 +101,6 @@ int32_t VideoRenderIosImpl::StopRender() {
   return ptr_ios_render_->StopRender();
 }
 
-void VideoRenderIosImpl::PauseRender(bool flag) {
-    ptr_ios_render_->PauseRender(flag);
-}
-
 VideoRenderType VideoRenderIosImpl::RenderType() { return kRenderiOS; }
 
 RawVideoType VideoRenderIosImpl::PerferedVideoType() { return kVideoI420; }
