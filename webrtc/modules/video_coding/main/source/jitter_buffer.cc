@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (c) 2012 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
@@ -394,8 +394,22 @@ bool VCMJitterBuffer::CompleteSequenceWithNextFrame() {
 
 // Returns immediately or a |max_wait_time_ms| ms event hang waiting for a
 // complete frame, |max_wait_time_ms| decided by caller.
+//
+// 本次改动理论上不会影响jitter_estimate_，但未经实测
+// 本次修改仅考虑了H264，对其它视频格式是否适用未知
+//
+// 策略：
+// 如果当前预期的frame未complete，那么等待直到满足以下任一条件
+// 1. 预期的frame变为completed
+// 2. decodable_frames_中有一个completed的IDR帧
+// 在ExtractAndSetDecode()时，返回当前预期的frame（如果completed），或者返回completed IDR frame
+//
+// 核心思想：
+// 所有非completed的frame都有可能造成花屏，非连续的P/B帧也有可能造成花屏，
+// 为了完全避免花屏，除非有合适的frame，否则应在解码前一直等待
 bool VCMJitterBuffer::NextCompleteTimestamp(
     uint32_t max_wait_time_ms, uint32_t* timestamp) {
+  /*
   crit_sect_->Enter();
   if (!running_) {
     crit_sect_->Leave();
@@ -440,9 +454,64 @@ bool VCMJitterBuffer::NextCompleteTimestamp(
   *timestamp = decodable_frames_.Front()->TimeStamp();
   crit_sect_->Leave();
   return true;
+  */
+
+  int64_t end_wait_time_ms = 0;
+  int64_t wait_time_ms = 0;
+  while (true) {
+    crit_sect_->Enter();
+    if (!running_) {
+      crit_sect_->Leave();
+      return false;
+    }
+    CleanUpOldOrEmptyFrames();
+    if (!decodable_frames_.empty() && decodable_frames_.Front()->GetState() == kStateComplete) {
+      *timestamp = decodable_frames_.Front()->TimeStamp();
+      crit_sect_->Leave();
+      return true;
+    }
+
+    if (end_wait_time_ms == 0) {
+      end_wait_time_ms = clock_->TimeInMilliseconds() + max_wait_time_ms;
+      wait_time_ms = max_wait_time_ms;
+    }
+    else {
+      wait_time_ms = end_wait_time_ms - clock_->TimeInMilliseconds();
+    }
+    if (wait_time_ms <= 0) {
+      break;
+    }
+
+    crit_sect_->Leave();
+    const EventTypeWrapper ret =
+      frame_event_->Wait(static_cast<uint32_t>(wait_time_ms));
+    if (ret != kEventSignaled) {
+      crit_sect_->Enter();
+      break;
+    }
+  }
+
+  CleanUpOldOrEmptyFrames();
+  if (!decodable_frames_.empty() && decodable_frames_.Front()->GetState() == kStateComplete) {
+    *timestamp = decodable_frames_.Front()->TimeStamp();
+    crit_sect_->Leave();
+    return true;
+  }
+  for (auto it = decodable_frames_.begin(); it != decodable_frames_.end(); it++) {
+    if (it->second->FrameType() == kVideoFrameKey && it->second->GetState() == kStateComplete) {
+      *timestamp = decodable_frames_.Front()->TimeStamp();
+      crit_sect_->Leave();
+      return true;
+    }
+  }
+
+  crit_sect_->Leave();
+  return false;
 }
 
+// 见NextCompleteTimestamp的注释
 bool VCMJitterBuffer::NextMaybeIncompleteTimestamp(uint32_t* timestamp) {
+  /*
   CriticalSectionScoped cs(crit_sect_);
   if (!running_) {
     return false;
@@ -468,8 +537,11 @@ bool VCMJitterBuffer::NextMaybeIncompleteTimestamp(uint32_t* timestamp) {
 
   *timestamp = oldest_frame->TimeStamp();
   return true;
+  */
+  return false;
 }
 
+// 见NextCompleteTimestamp的注释
 VCMEncodedFrame* VCMJitterBuffer::ExtractAndSetDecode(uint32_t timestamp) {
   CriticalSectionScoped cs(crit_sect_);
   if (!running_) {
@@ -478,6 +550,7 @@ VCMEncodedFrame* VCMJitterBuffer::ExtractAndSetDecode(uint32_t timestamp) {
   // Extract the frame with the desired timestamp.
   VCMFrameBuffer* frame = decodable_frames_.PopFrame(timestamp);
   bool continuous = true;
+  /*
   if (!frame) {
     frame = incomplete_frames_.PopFrame(timestamp);
     if (frame)
@@ -505,6 +578,55 @@ VCMEncodedFrame* VCMJitterBuffer::ExtractAndSetDecode(uint32_t timestamp) {
       waiting_for_completion_.timestamp = frame->TimeStamp();
     }
   }
+  */
+  if (!frame) {
+    return NULL;
+  }
+  if (frame->GetState() != kStateComplete) {
+    // 更新jitter_estimate_
+    // 我们已保证每次送给解码器的frame是完整的，所以没有waiting_for_completion_的情况
+    bool retransmitted = (frame->GetNackCount() > 0);
+    if (retransmitted) {
+      jitter_estimate_.FrameNacked();
+    }
+    else if (frame->Length() > 0) {
+      UpdateJitterEstimate(*frame, true);
+    }
+    frame = NULL;
+
+    while (!decodable_frames_.empty()) {
+      auto it = decodable_frames_.begin();
+      frame = it->second;
+      decodable_frames_.erase(it);
+      if (IsNewerTimestamp(frame->TimeStamp(), timestamp)) {
+        if (frame->FrameType() == kVideoFrameKey
+          && frame->GetState() == kStateComplete) {
+          // 查找到完整的IDR帧才退出
+          break;
+        }
+      }
+      else {
+        frame = NULL;
+        continue;
+      }
+
+      // 更新jitter_estimate_
+      // 我们已保证每次送给解码器的frame是完整的，所以没有waiting_for_completion_的情况
+      bool retransmitted = (frame->GetNackCount() > 0);
+      if (retransmitted) {
+        jitter_estimate_.FrameNacked();
+      }
+      else if (frame->Length() > 0) {
+        UpdateJitterEstimate(*frame, true);
+      }
+      frame = NULL;
+    }
+  }
+  if (!frame) {
+    return NULL;
+  }
+
+  continuous = last_decoded_state_.ContinuousFrame(frame);
 
   // The state must be changed to decoding before cleaning up zero sized
   // frames to avoid empty frames being cleaned up and then given to the
