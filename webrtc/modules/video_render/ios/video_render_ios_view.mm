@@ -163,6 +163,11 @@ using namespace webrtc;
 
 @end
 
+UIView *lfrtcCreateIosRenderView(CGRect frame) {
+  VideoRenderIosView *renderView = [[VideoRenderIosView alloc] initWithFrame:frame];
+  return renderView;
+}
+
 void *lfrtcCreateIosVideoRender(int idx, CGRect frame0, float scale0, UIView *view, void **rendHnd) {
   int orgx = frame0.origin.x * scale0;
   int orgy = frame0.origin.y * scale0;
@@ -211,13 +216,13 @@ void lfrtcDestroyIosVideoRender(void *rendHnd) {
   }
 }
 
-void CREATE_VIDEO_RENDER_PAUSE(void *hnd, bool flag) {
+/*void CREATE_VIDEO_RENDER_PAUSE(void *hnd, bool flag) {
   webrtc::VideoRenderIosImpl* ptrRenderer = reinterpret_cast<webrtc::VideoRenderIosImpl*>(hnd);
   if(ptrRenderer) {
     printf("CREATE_VIDEO_RENDER_PAUSE:%d\n",flag);
     ptrRenderer->PauseRender(flag);
   }
-}
+}*/
 
 /*void *CREATE_VIDEO_RENDER_OBJ(CGRect frame) {
   VideoRenderIosView *renderView = [[VideoRenderIosView alloc] initWithFrame:frame];

@@ -145,9 +145,11 @@ ModuleVideoRenderImpl::ModuleVideoRenderImpl(
 #elif defined(WEBRTC_IOS)
         case kRenderiOS:
         {
-
-            _ptrRenderer = reinterpret_cast<IVideoRender*>(window);
-
+            VideoRenderIosImpl* ptrRenderer = new VideoRenderIosImpl(_id, window, _fullScreen);
+            if(ptrRenderer)
+            {
+                _ptrRenderer = reinterpret_cast<IVideoRender*>(ptrRenderer);
+            }
         }
         break;
 
@@ -232,12 +234,9 @@ ModuleVideoRenderImpl::ModuleVideoRenderImpl(
     }
     if (_ptrRenderer)
     {
-#if defined(WEBRTC_IOS)
-#else
         if (_ptrRenderer->Init() == -1)
         {
         }
-#endif
     }
 }
 
@@ -278,9 +277,9 @@ ModuleVideoRenderImpl::~ModuleVideoRenderImpl()
 #elif defined(WEBRTC_IOS)
             case kRenderiOS:
             {
-//              VideoRenderIosImpl* ptrRenderer = reinterpret_cast<VideoRenderIosImpl*> (_ptrRenderer);
+              VideoRenderIosImpl* ptrRenderer = reinterpret_cast<VideoRenderIosImpl*> (_ptrRenderer);
               _ptrRenderer = NULL;
-//              delete ptrRenderer;
+              delete ptrRenderer;
             }
             break;
 #elif defined(WEBRTC_MAC)
