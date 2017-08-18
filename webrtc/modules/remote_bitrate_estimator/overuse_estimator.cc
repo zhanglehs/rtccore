@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (c) 2013 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
@@ -70,6 +70,11 @@ void OveruseEstimator::Update(int64_t t_delta,
   const double Eh[2] = {E_[0][0]*h[0] + E_[0][1]*h[1],
                         E_[1][0]*h[0] + E_[1][1]*h[1]};
 
+  // 本段代码与video jitter estimation思想是差不多的
+  // t_ts_delta类似于video jitter的frameDelay
+  // h[0] = fs_delta，是frameSize的变化
+  // 1/slope_就是网速
+  // 因此计算得到的residual就是将frameSize因素从网络delay中剔除，得到最终的修正后的frameDelay
   const double residual = t_ts_delta - slope_*h[0] - offset_;
 
   const bool in_stable_state = (current_hypothesis == kBwNormal);
@@ -126,6 +131,8 @@ double OveruseEstimator::UpdateMinFramePeriod(double ts_delta) {
   return min_frame_period;
 }
 
+// 更新网络jitter，与video的jitter估计是一样的
+// 网络jitter服从正态分布，实际上这里更新的是网络jitter的均值（avg_noise_）和方差（var_noise_）
 void OveruseEstimator::UpdateNoiseEstimate(double residual,
                                            double ts_delta,
                                            bool stable_state) {
@@ -141,6 +148,10 @@ void OveruseEstimator::UpdateNoiseEstimate(double residual,
   }
   // Only update the noise estimate if we're not over-using. |beta| is a
   // function of alpha and the time delta since the previous update.
+  //
+  // 更新因子是按照30fps设计的，根据实际帧率进行调整。
+  // 实际帧率 = 1000/ts_delta，因此下面的代码是将更新因子计算（30/实际帧率）次方。
+  //
   const double beta = pow(1 - alpha, ts_delta * 30.0 / 1000.0);
   avg_noise_ = beta * avg_noise_
               + (1 - beta) * residual;
