@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (c) 2011 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
@@ -26,6 +26,47 @@ enum { kStartupDelaySamples = 30 };
 enum { kFsAccuStartupSamples = 5 };
 enum { kMaxFramerateEstimate = 200 };
 
+
+// jitter估计的核心思想：
+// 1. 假设所有的frameSize相等，在恒定网络下有，frame2_arrival_time – frame1_arrival_time = frame2_timestamp – frame1_timestamp，
+//    实际的网络是有波动的，于是两者不相等。那么定义frameDelay = diff(frame_arrival_time) – diff(frame_timestamp)，
+//    frameDelay反应了网络的波动情况。
+// 2. “所有的frameSize相等”在实际是不成立的，较大的frameSize引起的delay实际上是合理的，
+//    因此需要根据frameSize对frameDelay进行修正（VCMJitterEstimator::DeviationFromExpectedDelay()函数就是在做这个事）
+//    修正公式为frameDelay -= (frameSize - avgFrameSize)/网速
+// 3. 经xxx牛人的研究，网络波动（修正后的frameDelay）服从正态分布。正态分布有两个参数：均值μ和方差σ。
+//    简单提一点正态分布的知识：方差σ描述正态分布的离散程度，σ越大，数据分布越分散，σ越小，数据分布越集中。
+//        正态分布曲线下，横轴区间（μ-σ,μ+σ）内的面积（即数据落在该区间的概率）为68.268949%。
+//        查正态分布表可知，数据落在（μ-2.33σ,μ+2.33σ）的概率为99.01%
+//    从大尺度来看，frameDelay的均值肯定是0，于是frameDelay是均值为0的正态分布。
+//    那么为保证99%的frame正常接收，需将视频人为延迟2.33σ的时间。代码中VCMJitterEstimator::NoiseThreshold()就有
+//    double noiseThreshold = _noiseStdDevs * sqrt(_varNoise) - _noiseStdDevOffset;即 noiseThreshold = 2.33 * frameDelay的方差 - 30;
+// 4. 上面仅仅是描述是网络自身的波动，而frameSize的波动对frame的最终接收时间也有影响，也属于jitter的一个因素。
+//    代码中处理得较简单，针对最大frameSize处理也就够了，即该jitter因子 = (_maxFrameSize - _avgFrameSize)/网速，
+//    计算出来的值通常较小。这段代码在VCMJitterEstimator::CalculateEstimate()中。
+// 5. 上面计算网络波动时，是以frame整体进行计算了，实际上frame的某些packet可能是nack恢复的，所以在rtt较小时，
+//    jitter会增加1个rtt的时间（rtt较大时，webrtc估计是认为很少有packet能通过nack恢复）。这部分的逻辑有点繁琐，
+//    且值通常较小，我没有过多的去关注。
+//
+// 我的理解：
+// 1. 按照上面的理论分析，2.33σ点位能保证99.01%的流畅率，实际则不然。核心的问题在于，“网络波动服从正态分布”是在大
+//    尺度多样本下得出的结论，实际的网络，例如wifi，经常会发生由好网络突然跳变到rtt>300ms。
+//
+// 代码说明：
+// _maxFrameSize: 动态更新
+// _avgFrameSize: 动态更新
+// _theta[0]: 网速，动态更新
+// _varNoise: 网络波动（frameDelay）方差的平方（σ*σ），动态更新
+// _avgNoise: 网络波动的平均值（μ），动态更新
+// _alphaCountMax: _varNoise和_avgNoise的更新系数，默认值为250，即更新率为1/250
+// 如果帧率较低，那么_varNoise和_avgNoise更新因子应加大。
+// 当帧率低于5fps时，webrtc认为当前的jitter没有意义，竟然直接返回0了。
+//
+// 对外接口：
+// VCMJitterEstimator::UpdateEstimate()，输入接口，提供训练数据
+// VCMJitterEstimator::GetJitterEstimate()，输出接口
+//
+
 VCMJitterEstimator::VCMJitterEstimator(const Clock* clock,
                                        int32_t vcmId,
                                        int32_t receiverId)
@@ -36,7 +77,7 @@ VCMJitterEstimator::VCMJitterEstimator(const Clock* clock,
       _alphaCountMax(250),
       _thetaLow(0.000001),
       _nackLimit(3),
-      _numStdDevDelayOutlier(15),
+      _numStdDevDelayOutlier(20),
       _numStdDevFrameSizeOutlier(3),
       _noiseStdDevs(2.33),       // ~Less than 1% chance
                                  // (look up in normal distribution table)...
@@ -85,7 +126,7 @@ VCMJitterEstimator::operator=(const VCMJitterEstimator& rhs)
 void
 VCMJitterEstimator::Reset()
 {
-    _theta[0] = 1/(512e3/8);
+    _theta[0] = 1/(512e3/8);   // 网速的初始值为512kbps
     _theta[1] = 0;
     _varNoise = 4.0;
 
@@ -120,10 +161,15 @@ VCMJitterEstimator::ResetNackCount()
 }
 
 // Updates the estimates with the new measurements
+//
+// frameDelayMS: 这个值已由调用方计算好了，它表示的是当前frame相对于上一个frame的到达时间差 - 时间戳之差。
+// 即frameDelayMS = diff(frame_arrival_time) – diff(frame_timestamp)
+//
 void
 VCMJitterEstimator::UpdateEstimate(int64_t frameDelayMS, uint32_t frameSizeBytes,
                                             bool incompleteFrame /* = false */)
 {
+  // 更新frameSize的平均值（_avgFrameSize）、最大值（_maxFrameSize）和方差（_varFrameSize）
     if (frameSizeBytes == 0)
     {
         return;
@@ -172,8 +218,12 @@ VCMJitterEstimator::UpdateEstimate(int64_t frameDelayMS, uint32_t frameSizeBytes
     // an extreme outlier. Even if it is an extreme outlier from a
     // delay point of view, if the frame size also is large the
     // deviation is probably due to an incorrect line slope.
+    //
+    // 将frameSize因素从网络delay中剔除，得到最终的修正后的frameDelay
+    // 即deviation = diff(frame_arrival_time) – diff(frame_timestamp) - (frame_size - _avgFrameSize)/net_speed
     double deviation = DeviationFromExpectedDelay(frameDelayMS, deltaFS);
 
+    // webrtc认为网络波动 > _numStdDevDelayOutlier*σ时是坏数据
     if (fabs(deviation) < _numStdDevDelayOutlier * sqrt(_varNoise) ||
         frameSizeBytes > _avgFrameSize + _numStdDevFrameSizeOutlier * sqrt(_varFrameSize))
     {
@@ -227,6 +277,9 @@ VCMJitterEstimator::FrameNacked()
 
 // Updates Kalman estimate of the channel
 // The caller is expected to sanity check the inputs.
+//
+// 不知道用了什么高级算法，反正最终的目的是估算网速_theta[0]
+//
 void
 VCMJitterEstimator::KalmanEstimateChannel(int64_t frameDelayMS,
                                           int32_t deltaFSBytes)
@@ -333,6 +386,9 @@ void VCMJitterEstimator::EstimateRandomJitter(double d_dT,
     _alphaCount = _alphaCountMax;
 
   if (LowRateExperimentEnabled()) {
+    //
+    // 当帧率较低时，加快更新因子
+    //
     // In order to avoid a low frame rate stream to react slower to changes,
     // scale the alpha weight relative a 30 fps stream.
     double fps = GetFrameRate();
