@@ -26,9 +26,9 @@
         'audio_encoder_aac.cc',		
       ],
 
-          'cflags': [
-          '-Wno-error',
-            ],
+      'cflags': [
+        '-Wno-error',
+      ],
 
       'variables': {
         'clang_warning_flags': [

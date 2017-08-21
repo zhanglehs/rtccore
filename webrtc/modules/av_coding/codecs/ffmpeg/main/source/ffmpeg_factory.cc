@@ -2,12 +2,8 @@
 #include "webrtc/modules/av_coding/codecs/ffmpeg/main/source/ffmpeg_factory.h"
 
 #include "third_party/jsoncpp/source/include/json/json.h"
-#include "webrtc/avengine/interface/avengine_api.h"
 #include "webrtc/avengine/source/avengine_util.h"
 #include "webrtc/modules/av_coding/codecs/ffmpeg/main/source/ffmpeg_resample.h"
-#include "webrtc/system_wrappers/interface/critical_section_wrapper.h"
-#include "webrtc/system_wrappers/interface/tick_util.h"
-#include <string.h>
 #include <assert.h>
 
 #if defined(WEBRTC_IOS) || defined(WEBRTC_MAC) || defined(IOS)

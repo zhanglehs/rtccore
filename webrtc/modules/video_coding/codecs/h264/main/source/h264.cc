@@ -2,9 +2,6 @@
 
 #include "webrtc/avengine/source/avengine_util.h"
 #include "webrtc/modules/av_coding/codecs/ffmpeg/main/source/ffmpeg_factory.h"
-#include "webrtc/modules/interface/module_common_types.h"
-#include "third_party/jsoncpp/source/include/json/json.h"
-#include <string.h>
 
 H264Decoder::H264Decoder() :
   _decodedImage(),
