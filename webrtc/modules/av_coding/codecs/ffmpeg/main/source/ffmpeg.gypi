@@ -15,73 +15,26 @@
         '<(webrtc_root)/system_wrappers/system_wrappers.gyp:system_wrappers',
       ],
 
-     'conditions': [
-         ['OS=="android"', {
-          'include_dirs': [
-            '../..',
-            '../../../../../../../webrtc/common_video/interface',
-            '../../../../../../../webrtc/common_video/libyuv/include',
-            '../../../../../../../chromium/src/third_party/libyuv/include',
-            '../../../../../../../chromium/src/third_party/libyuv',
-            '../../../../../../../chromium/src/third_party/libvpx/source/libvpx',
-            '../../../../../../../webrtc/modules/av_coding/codes/ffmpeg/main/interface',
-            '../../../../../../../webrtc/modules/av_coding/codes/ffmpeg/main/source',
-            '../../../../../../../third_party/ffmpeg/include',
-          ], 
-          'sources': [
-	    'ffmpeg_factory.h',
-	    'ffmpeg_factory.cc',
-	    'ffmpeg_resample.cc',
-	    'ffmpeg_resample.h',
-	    'rtp_enc_h264.cc',
-         ],
-       }],
-       ['OS=="ios"', {
-          'include_dirs': [
-            '../..',
-            '../../../../../../../webrtc/common_video/interface',
-            '../../../../../../../webrtc/common_video/libyuv/include',
-            '../../../../../../../chromium/src/third_party/libyuv/include',
-            '../../../../../../../chromium/src/third_party/libyuv',
-            '../../../../../../../chromium/src/third_party/libvpx/source/libvpx',
-            '../../../../../../../webrtc/modules/av_coding/codes/ffmpeg/main/interface',
-            '../../../../../../../webrtc/modules/av_coding/codes/ffmpeg/main/source',
-            '../../../../../../../third_party/ffmpeg/include',
-          ], 
-          'sources': [
-	    'ffmpeg_factory.h',
-	    'ffmpeg_factory.cc',
-	    'ffmpeg_resample.cc',
-	    'ffmpeg_resample.h',
-	    'rtp_enc_h264.cc',
-            'file_ios.m',
-         ],
-       }],
-       ['OS=="win"', {
-         'include_dirs': [
-            '../interface',
-            '../../../interface',
-            '../../../../../../common_video/interface',
-	    '../../../../../../common_audio/interface',
-	    '../../../../../../../third_party/ffmpeg/include',
-         ],
-         'sources': [
-	    'ffmpeg_factory.h',
-	    'ffmpeg_factory.cc',
-	    'ffmpeg_resample.cc',
-	    'ffmpeg_resample.h',
-	    'rtp_enc_h264.cc',
-         ],
-       }],
-     ], 
+      'include_dirs': [
+        '../../../../../../../third_party/ffmpeg/include',
+      ],
 
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '../interface',
-          '../../../../../../common_video/interface',
-		  '../../../../../../common_audio/interface',
-        ],
-      },
+      'sources': [
+        'ffmpeg_factory.h',
+        'ffmpeg_factory.cc',
+        'ffmpeg_resample.cc',
+        'ffmpeg_resample.h',
+        'rtp_enc_h264.cc',
+      ],
+
+      'conditions': [
+        ['OS=="ios"', {
+          'sources': [
+            'file_ios.m',
+          ],
+        }],
+      ],
+
       'variables': {
         'clang_warning_flags': [
           '-Wno-incompatible-pointer-types',
@@ -97,28 +50,28 @@
           '-Wno-deprecated-declarations',
           '-Wno-missing-field-initializers',
           '-Wno-invalid-source-encoding',
-         ],   
-       },  
+        ],
+      },
 
-            'cflags': [
-          '-Wno-error',
-            ],
+      'cflags': [
+        '-Wno-error',
+      ],
 
-	  'msvs_disabled_warnings': [
-           4189,
-		   4800,
-		   4101,
-		   4309,
-		   4169,
-		   4309,
-		   4018,
-		   4005,
-		   4289,
-		   4805,
-		   4706,
-		   4804,
-		   4189,
-       ],
+      'msvs_disabled_warnings': [
+        4189,
+        4800,
+        4101,
+        4309,
+        4169,
+        4309,
+        4018,
+        4005,
+        4289,
+        4805,
+        4706,
+        4804,
+        4189,
+      ],
     },
   ],
   'conditions': [
