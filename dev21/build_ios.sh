@@ -66,19 +66,19 @@ function create_ninja_files(){
 
     wrios_armv7
     python webrtc/build/gyp_webrtc.py
-    find out_ios_armeabi_v7a/ -name "*.ninja" | xargs sed -i "" 's/iPhoneOS10\.2/iPhoneOS8\.3/g'
+    find out_ios_armeabi_v7a/ -name "*.ninja" | xargs sed -i "" 's/iPhoneOS10\.3/iPhoneOS8\.3/g'
 
     wrios_armv8
     python webrtc/build/gyp_webrtc.py
-    find out_ios_arm64_v8a/ -name "*.ninja" | xargs sed -i "" 's/iPhoneOS10\.2/iPhoneOS8\.3/g'
+    find out_ios_arm64_v8a/ -name "*.ninja" | xargs sed -i "" 's/iPhoneOS10\.3/iPhoneOS8\.3/g'
 
     wrios_ia32
     python webrtc/build/gyp_webrtc.py
-    find out_ios_ia32/ -name "*.ninja" | xargs sed -i "" 's/iPhoneSimulator10\.2/iPhoneSimulator8\.3/g'
+    find out_ios_ia32/ -name "*.ninja" | xargs sed -i "" 's/iPhoneSimulator10\.3/iPhoneSimulator8\.3/g'
 
     wrios_x64
     python webrtc/build/gyp_webrtc.py
-    find out_ios_x64/ -name "*.ninja" | xargs sed -i "" 's/iPhoneSimulator10\.2/iPhoneSimulator8\.3/g'
+    find out_ios_x64/ -name "*.ninja" | xargs sed -i "" 's/iPhoneSimulator10\.3/iPhoneSimulator8\.3/g'
 }
 
 function create_directory_if_not_found() {
@@ -333,8 +333,9 @@ function lipo_intel_and_arm() {
 function lipo_for_configuration() {
     CONFIGURATION=$1
 
+    LIPO_DIRS=""
     # Directories to use for lipo, armv7 and ia32 as default
-    LIPO_DIRS="$BUILD/libWebRTC-armeabi_v7a-$CONFIGURATION.a"
+    LIPO_DIRS="$LIPO_DIRS $BUILD/libWebRTC-armeabi_v7a-$CONFIGURATION.a"
     # Add ARM64
     LIPO_DIRS="$LIPO_DIRS $BUILD/libWebRTC-arm64_v8a-$CONFIGURATION.a"
     # Add x86
