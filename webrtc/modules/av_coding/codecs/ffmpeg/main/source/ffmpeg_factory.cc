@@ -550,6 +550,9 @@ int lfrtcDecodeVideo(void *ctx, char *inBuf[3], int inLen[3], char *outBuf[3], i
       }
       return -2;
     }
+    if (usedLen == 0 && got_picture == 0) {
+      return -3;
+    }
 
     if (got_picture) {
       *frameType = frame->pict_type;
@@ -717,9 +720,13 @@ int lfrtcDecodeAudio(void *ctx, char *inBuf[3], int inLen[3], char *outBuf[3], i
   pkt.data = (uint8_t *)inBuf[0];
 
   while (pkt.size > 0) {
+    got_frame = 0;
     int read_size = avcodec_decode_audio4(c, frame, &got_frame, &pkt);
     if (read_size < 0) {
       return -2;
+    }
+    if (read_size == 0 && got_frame == 0) {
+      return -3;
     }
 
     if (got_frame) {
