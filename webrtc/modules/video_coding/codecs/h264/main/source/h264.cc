@@ -88,7 +88,7 @@ H264Decoder::H264Dec(const webrtc::EncodedImage& inputImage) {
   AVENGINE_TRC("H264Dec, last_seq=%d, timestamp=%u, lostpacket=%d, frame_type=%d", lastest_seqnum, inputImage._timeStamp, lost_pkt, frame_type);
 
   if (!got_picture) {
-    return WEBRTC_VIDEO_CODEC_OK;
+    return WEBRTC_VIDEO_CODEC_NO_OUTPUT;
   }
 
   //if (params && params->is_yuvDump)  {
