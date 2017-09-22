@@ -183,6 +183,7 @@ public class ViESurfaceRenderer {
         }
 
         if (mImageVertexBuffer == null) {
+			// TODO: zhangle, surface宽高变化时，mImageVertexBuffer应该重新赋值
             mImageVertexBuffer = GlCoordUtil.generateImageVertexFullCoordinate(bitmap.getWidth(), bitmap.getHeight(), windowWidth, windowHeight);
             if (mImageVertexBuffer == null) {
                 return;
